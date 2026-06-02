@@ -1,5 +1,5 @@
 import React from 'react';
-import { GiGraduateCap, GiCertificate, GiTrophy } from 'react-icons/gi';
+import { GiGraduateCap, GiTrophy } from 'react-icons/gi';
 
 const About = () => {
     const skills = [
@@ -12,7 +12,7 @@ const About = () => {
     ];
 
     const certificates = [
-        { year: 2023, name: 'Chứng chỉ SolidWorks Professional', icon: <GiCertificate /> },
+        { year: 2023, name: 'Chứng chỉ SolidWorks Professional', icon: <GiGraduateCap /> },
         { year: 2022, name: 'Khóa học Tự động hóa Siemens', icon: <GiGraduateCap /> },
         { year: 2021, name: 'Giải thưởng Sáng tạo Kỹ thuật', icon: <GiTrophy /> }
     ];
