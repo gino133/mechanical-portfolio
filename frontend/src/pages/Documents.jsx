@@ -157,4 +157,59 @@ const styles = {
         width: '100%',
         padding: '12px 12px 12px 40px',
         border: '1px solid var(--border-color)',
-       
+        borderRadius: '8px',
+        fontSize: '16px'
+    },
+    categories: {
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '12px',
+        marginBottom: '40px',
+        flexWrap: 'wrap'
+    },
+    categoryBtn: {
+        padding: '8px 20px',
+        border: '1px solid var(--border-color)',
+        background: 'white',
+        borderRadius: '25px',
+        cursor: 'pointer',
+        transition: 'all 0.3s'
+    },
+    categoryBtnActive: {
+        background: 'var(--primary-color)',
+        color: 'white',
+        borderColor: 'var(--primary-color)'
+    },
+    tableWrapper: {
+        overflowX: 'auto'
+    },
+    table: {
+        width: '100%',
+        borderCollapse: 'collapse'
+    },
+    fileName: {
+        fontWeight: '500'
+    },
+    typeBadge: {
+        display: 'inline-block',
+        padding: '4px 12px',
+        background: '#e3f2fd',
+        borderRadius: '20px',
+        fontSize: '12px'
+    },
+    actionBtn: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        marginRight: '8px',
+        fontSize: '18px',
+        color: 'var(--primary-color)'
+    },
+    noResults: {
+        textAlign: 'center',
+        padding: '40px',
+        color: '#999'
+    }
+};
+
+export default Documents;
