@@ -1,0 +1,41 @@
+backend/
+x├── src/
+│   x├── server.js
+│   x├── app.js
+│   x├── controllers/
+│   │   x├── authController.js
+│   │   x├── productController.js
+│   │   x├── projectController.js
+│   │   x├── documentController.js
+│   │   x├── categoryController.js
+│   │   x└── contactController.js
+│   x├── models/
+│   │   x├── User.js
+│   │   x├── Product.js
+│   │   x├── Project.js
+│   │   x├── Document.js
+│   │   x├── Category.js
+│   │   x└── Contact.js
+│   x├── routes/
+│   │   x├── index.js
+│   │   x├── authRoutes.js
+│   │   ├── productRoutes.js
+│   │   x├── projectRoutes.js
+│   │   x├── documentRoutes.js
+│   │   x├── categoryRoutes.js
+│   │   x└── contactRoutes.js
+│   x├── middleware/
+│   │   x├── authMiddleware.js
+│   │   x├── uploadMiddleware.js
+│   │   x├── errorMiddleware.js
+│   │   x└── validationMiddleware.js
+│   x├── config/
+│   │   x├── database.js
+│   │   x└── cloudinary.js
+│   x└── utils/
+│       x├── generateToken.js
+│       └── fileHelper.js
+x├── .env
+x├── .env.example
+x├── package.json
+x└── README.md

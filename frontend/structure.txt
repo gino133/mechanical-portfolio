@@ -1,0 +1,37 @@
+frontend/
+x├── public/
+│   x├── index.html
+│   x└── assets/
+│       x└── images/ (để trống, anh/chị tự thêm ảnh)
+x├── src/
+│   x├── index.js	
+│   x├── App.js
+│   ├── App.css
+│   x├── pages/
+│   │   x├── Home.jsx
+│   │   x├── About.jsx
+│   │   x├── Products.jsx
+│   │   x├── ProductDetail.jsx
+│   │   x├── Projects.jsx
+│   │   x├── ProjectDetail.jsx
+│   │   x├── Documents.jsx
+│   │   x└── Contact.jsx
+│   x├── components/
+│   │   x├── common/
+│   │   │   x├── Header.jsx
+│   │   │   x└── Footer.jsx
+│   │   x├── home/
+│   │   │   x├── HeroSection.jsx
+│   │   │   x├── IntroSection.jsx
+│   │   │   x├── FeaturedProducts.jsx
+│   │   │   x└── FeaturedProjects.jsx
+│   │   └── ui/
+│   │       x├── Button.jsx
+│   │       x├── Card.jsx
+│   │       x└── LoadingSpinner.jsx
+│   x├── services/
+│   │   └── api.js
+│   x└── styles/
+│       x└── global.css
+x├── package.json
+x└── .env
