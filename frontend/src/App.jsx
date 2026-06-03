@@ -24,6 +24,7 @@ import ProductsManager from './pages/Admin/ProductsManager';
 import ProjectsManager from './pages/Admin/ProjectsManager';
 import DocumentsManager from './pages/Admin/DocumentsManager';
 import MessagesManager from './pages/Admin/MessagesManager';
+import PagesManager from './pages/Admin/PagesManager';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -66,6 +67,7 @@ function App() {
                                 </div>} />
                                 <Route path="settings" element={<Settings />} />
                                 <Route path="menu" element={<MenuManager />} />
+                                <Route path="pages" element={<PagesManager />} />
                                 <Route path="products" element={<ProductsManager />} />
                                 <Route path="projects" element={<ProjectsManager />} />
                                 <Route path="documents" element={<DocumentsManager />} />
