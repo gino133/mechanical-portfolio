@@ -20,11 +20,11 @@ import AdminLogin from './pages/Admin/Login';
 import AdminDashboard from './pages/Admin/Dashboard';
 import Settings from './pages/Admin/Settings';
 import MenuManager from './pages/Admin/MenuManager';
+import PagesManager from './pages/Admin/PagesManager';
 import ProductsManager from './pages/Admin/ProductsManager';
 import ProjectsManager from './pages/Admin/ProjectsManager';
 import DocumentsManager from './pages/Admin/DocumentsManager';
 import MessagesManager from './pages/Admin/MessagesManager';
-import PagesManager from './pages/Admin/PagesManager';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +33,18 @@ const ProtectedRoute = ({ children }) => {
         return <Navigate to="/admin/login" replace />;
     }
     return children;
+};
+
+// 404 Page component
+const NotFound = () => {
+    return (
+        <div style={styles.notFound}>
+            <h1>404</h1>
+            <h2>Không tìm thấy trang</h2>
+            <p>Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.</p>
+            <a href="/" style={styles.backHome}>Về trang chủ</a>
+        </div>
+    );
 };
 
 function App() {
@@ -53,18 +65,40 @@ function App() {
                             <Route path="/documents" element={<Documents />} />
                             <Route path="/contact" element={<Contact />} />
                             
-                            {/* Admin Routes */}
+                            {/* Admin Login - no layout */}
                             <Route path="/admin/login" element={<AdminLogin />} />
+                            
+                            {/* Admin Dashboard with layout and protected */}
                             <Route path="/admin" element={
                                 <ProtectedRoute>
                                     <AdminDashboard />
                                 </ProtectedRoute>
                             }>
                                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                                <Route path="dashboard" element={<div style={styles.dashboardHome}>
-                                    <h2>Chào mừng đến với trang quản trị</h2>
-                                    <p>Chọn một mục bên trái để bắt đầu quản lý.</p>
-                                </div>} />
+                                <Route path="dashboard" element={
+                                    <div style={styles.dashboardHome}>
+                                        <h2>Chào mừng đến với trang quản trị</h2>
+                                        <p>Chọn một mục bên trái để bắt đầu quản lý nội dung website.</p>
+                                        <div style={styles.stats}>
+                                            <div style={styles.statCard}>
+                                                <h3>📦 Sản phẩm</h3>
+                                                <p>Quản lý danh sách sản phẩm</p>
+                                            </div>
+                                            <div style={styles.statCard}>
+                                                <h3>🏗️ Dự án</h3>
+                                                <p>Quản lý danh sách dự án</p>
+                                            </div>
+                                            <div style={styles.statCard}>
+                                                <h3>📄 Tài liệu</h3>
+                                                <p>Upload và quản lý tài liệu</p>
+                                            </div>
+                                            <div style={styles.statCard}>
+                                                <h3>💬 Tin nhắn</h3>
+                                                <p>Xem tin nhắn liên hệ</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                } />
                                 <Route path="settings" element={<Settings />} />
                                 <Route path="menu" element={<MenuManager />} />
                                 <Route path="pages" element={<PagesManager />} />
@@ -86,24 +120,24 @@ function App() {
     );
 }
 
-// 404 Page
-const NotFound = () => {
-    return (
-        <div style={styles.notFound}>
-            <h1>404</h1>
-            <h2>Không tìm thấy trang</h2>
-            <p>Trang bạn đang tìm kiếm không tồn tại hoặc đã được di chuyển.</p>
-            <a href="/" style={styles.backHome}>Về trang chủ</a>
-        </div>
-    );
-};
-
 const styles = {
     dashboardHome: {
         textAlign: 'center',
-        padding: '60px 20px',
+        padding: '40px 20px',
         background: 'white',
-        borderRadius: '8px'
+        borderRadius: '12px'
+    },
+    stats: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '20px',
+        marginTop: '32px'
+    },
+    statCard: {
+        background: '#f5f7fa',
+        padding: '20px',
+        borderRadius: '8px',
+        textAlign: 'center'
     },
     notFound: {
         textAlign: 'center',
