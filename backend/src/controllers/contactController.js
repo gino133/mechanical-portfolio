@@ -1,4 +1,5 @@
 const Contact = require('../models/Contact');
+const { sendContactNotification, sendAutoReplyToCustomer } = require('../config/email');
 
 // @desc    Send contact message
 // @route   POST /api/v1/contact/send
@@ -6,20 +7,34 @@ const Contact = require('../models/Contact');
 const sendContact = async (req, res) => {
     const { name, email, phone, company, message, interestedIn } = req.body;
     
-    const contact = await Contact.create({
-        name,
-        email,
-        phone,
-        company,
-        message,
-        interestedIn
-    });
-    
-    res.status(201).json({
-        success: true,
-        message: 'Message sent successfully',
-        data: contact
-    });
+    try {
+        const contact = await Contact.create({
+            name,
+            email,
+            phone,
+            company,
+            message,
+            interestedIn
+        });
+        
+        // Gửi email thông báo cho admin
+        await sendContactNotification(contact);
+        
+        // (Tùy chọn) Gửi email xác nhận cho khách hàng
+        // await sendAutoReplyToCustomer(contact);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Message sent successfully',
+            data: contact
+        });
+    } catch (error) {
+        console.error('Error sending contact:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to send message'
+        });
+    }
 };
 
 // @desc    Get all contact messages
