@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
-import { FiMenu, FiTrash2, FiEdit2, FiPlus, FiGripVertical } from 'react-icons/fi';
+import { FiMenu, FiTrash2, FiEdit2, FiPlus, FiMove } from 'react-icons/fi';
 
 const MenuManager = () => {
     const { menu, updateMenu } = useSettings();
@@ -78,7 +78,7 @@ const MenuManager = () => {
                 {menu.map((item, index) => (
                     <div key={item.id} style={styles.menuItem}>
                         <div style={styles.dragHandle}>
-                            <FiGripVertical />
+                            <FiMove />
                         </div>
                         <div style={styles.menuContent}>
                             <div style={styles.menuLabel}>
