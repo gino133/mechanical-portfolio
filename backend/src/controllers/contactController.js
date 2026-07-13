@@ -6,7 +6,7 @@ const { sendContactNotification, sendAutoReplyToCustomer } = require('../config/
 // @access  Public
 const sendContact = async (req, res) => {
     const { name, email, phone, company, message, interestedIn } = req.body;
-    
+
     try {
         const contact = await Contact.create({
             name,
@@ -16,13 +16,18 @@ const sendContact = async (req, res) => {
             message,
             interestedIn
         });
-        
-        // Gửi email thông báo cho admin
-        await sendContactNotification(contact);
-        
-        // (Tùy chọn) Gửi email xác nhận cho khách hàng
-        // await sendAutoReplyToCustomer(contact);
-        
+
+        // FIX: email sending is best-effort and must not turn an already-saved
+        // message into a false "failed" response for the visitor. If
+        // EMAIL_USER/EMAIL_PASS aren't configured, this used to throw and the
+        // outer catch returned 500 even though the message was saved fine.
+        try {
+            await sendContactNotification(contact);
+            // await sendAutoReplyToCustomer(contact);
+        } catch (emailError) {
+            console.error('Contact saved, but notification email failed:', emailError.message);
+        }
+
         res.status(201).json({
             success: true,
             message: 'Message sent successfully',
@@ -44,14 +49,14 @@ const getMessages = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const startIndex = (page - 1) * limit;
-    
+
     const messages = await Contact.find()
         .sort('-createdAt')
         .limit(limit)
         .skip(startIndex);
-    
+
     const total = await Contact.countDocuments();
-    
+
     res.json({
         success: true,
         data: messages,
@@ -69,17 +74,17 @@ const getMessages = async (req, res) => {
 // @access  Private/Admin
 const markAsRead = async (req, res) => {
     const message = await Contact.findById(req.params.id);
-    
+
     if (!message) {
         return res.status(404).json({
             success: false,
             message: 'Message not found'
         });
     }
-    
+
     message.isRead = true;
     await message.save();
-    
+
     res.json({
         success: true,
         data: message
@@ -91,16 +96,16 @@ const markAsRead = async (req, res) => {
 // @access  Private/Admin
 const deleteMessage = async (req, res) => {
     const message = await Contact.findById(req.params.id);
-    
+
     if (!message) {
         return res.status(404).json({
             success: false,
             message: 'Message not found'
         });
     }
-    
+
     await message.deleteOne();
-    
+
     res.json({
         success: true,
         message: 'Message deleted'
