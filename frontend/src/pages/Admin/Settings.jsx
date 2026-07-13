@@ -51,6 +51,20 @@ const Settings = () => {
         setForm(prev => ({ ...prev, certificates: prev.certificates.filter((_, i) => i !== index) }));
     };
 
+    const handleFooterLinkChange = (index, field, value) => {
+        const newLinks = [...(form.footerLinks || [])];
+        newLinks[index] = { ...newLinks[index], [field]: value };
+        setForm({ ...form, footerLinks: newLinks });
+    };
+
+    const addFooterLink = () => {
+        setForm({ ...form, footerLinks: [...(form.footerLinks || []), { label: '', path: '/' }] });
+    };
+
+    const removeFooterLink = (index) => {
+        setForm({ ...form, footerLinks: (form.footerLinks || []).filter((_, i) => i !== index) });
+    };
+
     const handleSave = async () => {
         setSaving(true);
         setSaveMsg('');
@@ -380,6 +394,29 @@ const Settings = () => {
                         <label>Dòng bản quyền (copyright)</label>
                         <input type="text" name="copyrightText" value={form.copyrightText || ''} onChange={handleChange} style={styles.input} />
                     </div>
+
+                    <h3 style={{ marginTop: '32px' }}>Liên kết nhanh (cột giữa Footer)</h3>
+                    <p style={styles.hint}>Danh sách này độc lập với Menu chính ở header - bạn có thể đặt khác nhau.</p>
+                    {(form.footerLinks || []).map((link, index) => (
+                        <div key={index} style={styles.listRow}>
+                            <input
+                                type="text"
+                                value={link.label}
+                                onChange={(e) => handleFooterLinkChange(index, 'label', e.target.value)}
+                                style={{ ...styles.input, flex: 2 }}
+                                placeholder="Tên hiển thị (VD: Sản phẩm)"
+                            />
+                            <input
+                                type="text"
+                                value={link.path}
+                                onChange={(e) => handleFooterLinkChange(index, 'path', e.target.value)}
+                                style={{ ...styles.input, flex: 2 }}
+                                placeholder="Đường dẫn (VD: /products)"
+                            />
+                            <button onClick={() => removeFooterLink(index)} style={styles.iconBtn} type="button"><FiTrash2 /></button>
+                        </div>
+                    ))}
+                    <button onClick={addFooterLink} style={styles.addBtn} type="button"><FiPlus /> Thêm liên kết</button>
                 </div>
             )}
 
