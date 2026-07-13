@@ -39,7 +39,11 @@ const userSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-userSchema.pre('save', async function(next) {
+// FIX: the original hook never called next() on the "hash" branch, and was
+// missing "return" before next() on the "skip" branch. Mongoose waits for
+// next() to be called before considering the pre-save hook finished, so
+// every save()/create() call used to hang forever. Both are fixed below.
+userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {
         return next();
     }
@@ -49,7 +53,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Match user entered password to hashed password in database
-userSchema.methods.matchPassword = async function(enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };
 
