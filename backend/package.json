@@ -4,7 +4,9 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "seed": "node src/seeds/seed.js"
+    "dev": "nodemon src/server.js",
+    "seed": "node src/seeds/seed.js",
+    "seed:admin": "node src/seeds/createAdmin.js"
   },
   "dependencies": {
     "express": "^4.18.2",
