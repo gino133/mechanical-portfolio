@@ -190,6 +190,15 @@ export const contactAPI = {
     delete: (id) => api.delete(`/contact/${id}`),
 };
 
+// ==================== SETTINGS API ====================
+export const settingsAPI = {
+    // Get site-wide settings (public)
+    get: () => api.get('/settings'),
+
+    // Update site-wide settings (admin only)
+    update: (data) => api.put('/settings', data),
+};
+
 // ==================== SEARCH API ====================
 export const searchAPI = {
     // Search across products, projects, documents
