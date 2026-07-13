@@ -1,19 +1,29 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const HeroSection = () => {
+    const { settings } = useSettings();
+
     return (
         <section style={styles.hero}>
-            <div style={styles.overlay}></div>
+            <div
+                style={{
+                    ...styles.overlay,
+                    background: settings.heroImage
+                        ? `url(${settings.heroImage}) center/cover`
+                        : styles.overlay.background
+                }}
+            ></div>
             <div className="container" style={styles.container}>
                 <h1 style={styles.title}>
-                    Nguyễn Văn A
+                    {settings.heroTitle}
                 </h1>
                 <p style={styles.subtitle}>
-                    Kỹ sư Cơ khí chế tạo & Tự động hóa
+                    {settings.heroSubtitle}
                 </p>
                 <p style={styles.description}>
-                    Giải pháp kỹ thuật toàn diện cho ngành công nghiệp
+                    {settings.heroDescription}
                 </p>
                 <div style={styles.buttons}>
                     <Link to="/projects" className="btn btn-primary">Xem dự án</Link>

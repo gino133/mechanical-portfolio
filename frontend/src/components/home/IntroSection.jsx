@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { GiGears, GiElectric } from 'react-icons/gi';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const IntroSection = () => {
+    const { settings } = useSettings();
+
     const stats = [
-        { number: '10+', label: 'Năm kinh nghiệm' },
-        { number: '50+', label: 'Dự án hoàn thành' },
-        { number: '30+', label: 'Khách hàng' }
+        { number: settings.statYears, label: settings.statYearsLabel },
+        { number: settings.statProjects, label: settings.statProjectsLabel },
+        { number: settings.statClients, label: settings.statClientsLabel }
     ];
 
     return (
@@ -16,9 +19,7 @@ const IntroSection = () => {
                     <div>
                         <h2 style={styles.title}>Giới thiệu</h2>
                         <p style={styles.text}>
-                            Tôi là kỹ sư cơ khí với hơn 10 năm kinh nghiệm trong lĩnh vực thiết kế, 
-                            chế tạo và gia công cơ khí chính xác. Bên cạnh đó, tôi cũng có kiến thức 
-                            sâu rộng về hệ thống điện công nghiệp và tự động hóa.
+                            {settings.introText1}
                         </p>
                         <Link to="/about" className="btn btn-primary" style={styles.btn}>Tìm hiểu thêm</Link>
                     </div>
