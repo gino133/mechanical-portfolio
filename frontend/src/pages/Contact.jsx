@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { FiMapPin, FiPhone, FiMail, FiClock } from 'react-icons/fi';
+import { useSettings } from '../contexts/SettingsContext';
+import { contactAPI } from '../services/api';
 
 const Contact = () => {
+    const { settings } = useSettings();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -10,24 +13,35 @@ const Contact = () => {
         message: ''
     });
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Here will call API later
-        console.log('Form submitted:', formData);
-        setSubmitted(true);
-        setTimeout(() => setSubmitted(false), 5000);
+        setSubmitting(true);
+        setError('');
+
+        try {
+            await contactAPI.send(formData);
+            setSubmitted(true);
+            setFormData({ name: '', email: '', phone: '', company: '', message: '' });
+            setTimeout(() => setSubmitted(false), 5000);
+        } catch (err) {
+            setError('Gửi tin nhắn thất bại, vui lòng thử lại sau.');
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const contactInfo = [
-        { icon: <FiMapPin />, title: 'Địa chỉ', content: 'Hà Nội, Việt Nam' },
-        { icon: <FiPhone />, title: 'Điện thoại', content: '0123 456 789' },
-        { icon: <FiMail />, title: 'Email', content: 'nguyenvana@email.com' },
-        { icon: <FiClock />, title: 'Thời gian làm việc', content: 'Thứ 2 - Thứ 7: 8:00 - 17:30' }
+        { icon: <FiMapPin />, title: 'Địa chỉ', content: settings.address },
+        { icon: <FiPhone />, title: 'Điện thoại', content: settings.phone },
+        { icon: <FiMail />, title: 'Email', content: settings.email },
+        { icon: <FiClock />, title: 'Thời gian làm việc', content: settings.workingHours }
     ];
 
     return (
@@ -68,6 +82,11 @@ const Contact = () => {
                             {submitted && (
                                 <div style={styles.successMsg}>
                                     ✓ Cảm ơn bạn đã liên hệ! Tôi sẽ phản hồi sớm nhất.
+                                </div>
+                            )}
+                            {error && (
+                                <div style={styles.errorMsg}>
+                                    {error}
                                 </div>
                             )}
                             <form onSubmit={handleSubmit} style={styles.form}>
@@ -129,8 +148,8 @@ const Contact = () => {
                                     ></textarea>
                                 </div>
 
-                                <button type="submit" className="btn btn-primary" style={styles.btn}>
-                                    Gửi tin nhắn
+                                <button type="submit" className="btn btn-primary" style={styles.btn} disabled={submitting}>
+                                    {submitting ? 'Đang gửi...' : 'Gửi tin nhắn'}
                                 </button>
                             </form>
                         </div>
@@ -220,6 +239,13 @@ const styles = {
     successMsg: {
         background: '#d4edda',
         color: '#155724',
+        padding: '12px',
+        borderRadius: '4px',
+        marginBottom: '20px'
+    },
+    errorMsg: {
+        background: '#f8d7da',
+        color: '#721c24',
         padding: '12px',
         borderRadius: '4px',
         marginBottom: '20px'

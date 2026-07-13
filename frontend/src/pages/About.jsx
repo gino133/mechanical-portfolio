@@ -1,28 +1,21 @@
 import React from 'react';
 import { GiGraduateCap, GiTrophy } from 'react-icons/gi';
+import { useSettings } from '../contexts/SettingsContext';
 
 const About = () => {
-    const skills = [
-        { name: 'Thiết kế cơ khí', level: 90 },
-        { name: 'SolidWorks / AutoCAD', level: 95 },
-        { name: 'Tính toán kết cấu', level: 85 },
-        { name: 'Gia công CNC', level: 80 },
-        { name: 'Điện công nghiệp', level: 75 },
-        { name: 'Lập trình PLC', level: 70 }
-    ];
+    const { settings } = useSettings();
 
-    const certificates = [
-        { year: 2023, name: 'Chứng chỉ SolidWorks Professional', icon: <GiGraduateCap /> },
-        { year: 2022, name: 'Khóa học Tự động hóa Siemens', icon: <GiGraduateCap /> },
-        { year: 2021, name: 'Giải thưởng Sáng tạo Kỹ thuật', icon: <GiTrophy /> }
-    ];
+    const skills = settings.skills && settings.skills.length > 0 ? settings.skills : [];
+    const certificates = settings.certificates && settings.certificates.length > 0
+        ? settings.certificates.map(c => ({ ...c, icon: <GiGraduateCap /> }))
+        : [];
 
     return (
         <div>
             <section style={styles.hero}>
                 <div className="container">
                     <h1 style={styles.title}>Giới thiệu về tôi</h1>
-                    <p style={styles.subtitle}>Kỹ sư Cơ khí - Chuyên gia Tự động hóa</p>
+                    <p style={styles.subtitle}>{settings.heroSubtitle}</p>
                 </div>
             </section>
 
@@ -30,79 +23,86 @@ const About = () => {
                 <div className="container">
                     <div style={styles.grid}>
                         <div>
-                            <img 
-                                src="https://via.placeholder.com/400x500?text=Avatar" 
-                                alt="Profile" 
+                            <img
+                                src={settings.avatarImage}
+                                alt="Profile"
                                 style={styles.avatar}
                             />
                         </div>
                         <div>
                             <h2 style={styles.sectionTitle}>Hồ sơ cá nhân</h2>
                             <p style={styles.text}>
-                                Tôi là Nguyễn Văn A, kỹ sư cơ khí với hơn 10 năm kinh nghiệm trong lĩnh vực 
-                                thiết kế, chế tạo và gia công cơ khí chính xác. Tốt nghiệp Đại học Bách khoa 
-                                Hà Nội chuyên ngành Cơ khí chế tạo máy.
+                                {settings.aboutIntro1}
                             </p>
                             <p style={styles.text}>
-                                Bên cạnh đó, tôi cũng có kiến thức sâu rộng về hệ thống điện công nghiệp và 
-                                tự động hóa, giúp tôi có thể đưa ra các giải pháp toàn diện cho khách hàng.
+                                {settings.aboutIntro2}
                             </p>
-                            
+
                             <div style={styles.infoGrid}>
-                                <div><strong>📧 Email:</strong> nguyenvana@email.com</div>
-                                <div><strong>📱 Điện thoại:</strong> 0123 456 789</div>
-                                <div><strong>📍 Địa chỉ:</strong> Hà Nội, Việt Nam</div>
-                                <div><strong>🎓 Học vấn:</strong> Đại học Bách khoa Hà Nội</div>
+                                <div><strong>📧 Email:</strong> {settings.email}</div>
+                                <div><strong>📱 Điện thoại:</strong> {settings.phone}</div>
+                                <div><strong>📍 Địa chỉ:</strong> {settings.address}</div>
+                                <div><strong>🎓 Học vấn:</strong> {settings.education}</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section style={styles.sectionBg}>
-                <div className="container">
-                    <h2 style={styles.sectionTitle}>Kỹ năng chuyên môn</h2>
-                    {skills.map((skill, index) => (
-                        <div key={index} style={styles.skillItem}>
-                            <div style={styles.skillName}>{skill.name}</div>
-                            <div style={styles.skillBar}>
-                                <div style={{ ...styles.skillFill, width: `${skill.level}%` }}></div>
-                            </div>
-                            <span style={styles.skillPercent}>{skill.level}%</span>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            <section style={styles.section}>
-                <div className="container">
-                    <h2 style={styles.sectionTitle}>Chứng chỉ & Giải thưởng</h2>
-                    <div style={styles.timeline}>
-                        {certificates.map((cert, index) => (
-                            <div key={index} style={styles.timelineItem}>
-                                <div style={styles.timelineIcon}>{cert.icon}</div>
-                                <div style={styles.timelineContent}>
-                                    <div style={styles.timelineYear}>{cert.year}</div>
-                                    <h3 style={styles.timelineTitle}>{cert.name}</h3>
+            {skills.length > 0 && (
+                <section style={styles.sectionBg}>
+                    <div className="container">
+                        <h2 style={styles.sectionTitle}>Kỹ năng chuyên môn</h2>
+                        {skills.map((skill, index) => (
+                            <div key={index} style={styles.skillItem}>
+                                <div style={styles.skillName}>{skill.name}</div>
+                                <div style={styles.skillBar}>
+                                    <div style={{ ...styles.skillFill, width: `${skill.level}%` }}></div>
                                 </div>
+                                <span style={styles.skillPercent}>{skill.level}%</span>
                             </div>
                         ))}
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
-            <section style={styles.downloadSection}>
-                <div className="container" style={styles.downloadContainer}>
-                    <h2>Tải CV của tôi</h2>
-                    <p>Xem chi tiết hồ sơ năng lực và kinh nghiệm làm việc</p>
-                    <button className="btn btn-primary" style={styles.downloadBtn}>
-                        📄 Tải CV (PDF) - Tiếng Việt
-                    </button>
-                    <button className="btn btn-outline" style={styles.downloadBtn}>
-                        📄 Tải CV (PDF) - English
-                    </button>
-                </div>
-            </section>
+            {certificates.length > 0 && (
+                <section style={styles.section}>
+                    <div className="container">
+                        <h2 style={styles.sectionTitle}>Chứng chỉ & Giải thưởng</h2>
+                        <div style={styles.timeline}>
+                            {certificates.map((cert, index) => (
+                                <div key={index} style={styles.timelineItem}>
+                                    <div style={styles.timelineIcon}>{cert.icon}</div>
+                                    <div style={styles.timelineContent}>
+                                        <div style={styles.timelineYear}>{cert.year}</div>
+                                        <h3 style={styles.timelineTitle}>{cert.name}</h3>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {(settings.cvUrlVi || settings.cvUrlEn) && (
+                <section style={styles.downloadSection}>
+                    <div className="container" style={styles.downloadContainer}>
+                        <h2>Tải CV của tôi</h2>
+                        <p>Xem chi tiết hồ sơ năng lực và kinh nghiệm làm việc</p>
+                        {settings.cvUrlVi && (
+                            <a href={settings.cvUrlVi} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={styles.downloadBtn}>
+                                📄 Tải CV (PDF) - Tiếng Việt
+                            </a>
+                        )}
+                        {settings.cvUrlEn && (
+                            <a href={settings.cvUrlEn} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={styles.downloadBtn}>
+                                📄 Tải CV (PDF) - English
+                            </a>
+                        )}
+                    </div>
+                </section>
+            )}
         </div>
     );
 };
@@ -216,7 +216,9 @@ const styles = {
         textAlign: 'center'
     },
     downloadBtn: {
-        margin: '8px'
+        margin: '8px',
+        display: 'inline-block',
+        textDecoration: 'none'
     }
 };
 
