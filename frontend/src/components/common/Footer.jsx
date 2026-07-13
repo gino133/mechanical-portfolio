@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FiMail, FiPhone, FiMapPin } from 'react-icons/fi';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const Footer = () => {
+    const { settings } = useSettings();
+
     return (
         <footer style={styles.footer}>
             <div className="container" style={styles.container}>
@@ -11,7 +14,7 @@ const Footer = () => {
                     <div>
                         <h3 style={styles.title}>Về tôi</h3>
                         <p style={styles.text}>
-                            Kỹ sư Cơ khí & Điện với 10+ năm kinh nghiệm trong lĩnh vực chế tạo máy và tự động hóa.
+                            {settings.footerAboutText}
                         </p>
                     </div>
 
@@ -30,15 +33,15 @@ const Footer = () => {
                     <div>
                         <h3 style={styles.title}>Thông tin liên hệ</h3>
                         <ul style={styles.contactList}>
-                            <li><FiMail /> <a href="mailto:nguyenvana@email.com" style={styles.link}>nguyenvana@email.com</a></li>
-                            <li><FiPhone /> <a href="tel:0123456789" style={styles.link}>0123 456 789</a></li>
-                            <li><FiMapPin /> Hà Nội, Việt Nam</li>
+                            <li><FiMail /> <a href={`mailto:${settings.email}`} style={styles.link}>{settings.email}</a></li>
+                            <li><FiPhone /> <a href={`tel:${settings.phone}`} style={styles.link}>{settings.phone}</a></li>
+                            <li><FiMapPin /> {settings.address}</li>
                         </ul>
                     </div>
                 </div>
 
                 <div style={styles.copyright}>
-                    <p>&copy; 2024 Nguyễn Văn A. All rights reserved.</p>
+                    <p>{settings.copyrightText}</p>
                 </div>
             </div>
         </footer>
