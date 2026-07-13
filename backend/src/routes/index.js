@@ -7,6 +7,7 @@ const projectRoutes = require('./projectRoutes');
 const documentRoutes = require('./documentRoutes');
 const categoryRoutes = require('./categoryRoutes');
 const contactRoutes = require('./contactRoutes');
+const settingsRoutes = require('./settingsRoutes');
 const setupRoutes = require('./setupRoutes'); // TEMPORARY - remove after creating admin
 
 router.use('/auth', authRoutes);
@@ -15,6 +16,7 @@ router.use('/projects', projectRoutes);
 router.use('/documents', documentRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/contact', contactRoutes);
+router.use('/settings', settingsRoutes);
 router.use('/setup', setupRoutes); // TEMPORARY - remove after creating admin
 
 module.exports = router;
