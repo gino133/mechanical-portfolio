@@ -22,10 +22,9 @@ const Footer = () => {
                     <div>
                         <h3 style={styles.title}>Liên kết nhanh</h3>
                         <ul style={styles.linkList}>
-                            <li><Link to="/products" style={styles.link}>Sản phẩm</Link></li>
-                            <li><Link to="/projects" style={styles.link}>Dự án</Link></li>
-                            <li><Link to="/documents" style={styles.link}>Tài liệu</Link></li>
-                            <li><Link to="/contact" style={styles.link}>Liên hệ</Link></li>
+                            {(settings.footerLinks || []).map((item, index) => (
+                                <li key={index}><Link to={item.path} style={styles.link}>{item.label}</Link></li>
+                            ))}
                         </ul>
                     </div>
 
