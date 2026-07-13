@@ -70,7 +70,13 @@ const DEFAULT_SETTINGS = {
 
     // Footer
     footerAboutText: '',
-    copyrightText: '© 2026 Nguyễn Văn A. All rights reserved.'
+    copyrightText: '© 2026 Nguyễn Văn A. All rights reserved.',
+    footerLinks: [
+        { label: 'Sản phẩm', path: '/products' },
+        { label: 'Dự án', path: '/projects' },
+        { label: 'Tài liệu', path: '/documents' },
+        { label: 'Liên hệ', path: '/contact' }
+    ]
 };
 
 const DEFAULT_MENU = [
