@@ -18,6 +18,11 @@ const menuItemSchema = new mongoose.Schema({
     visible: { type: Boolean, default: true }
 }, { _id: false });
 
+const footerLinkSchema = new mongoose.Schema({
+    label: { type: String, required: true },
+    path: { type: String, required: true }
+}, { _id: false });
+
 const settingsSchema = new mongoose.Schema({
     // Branding
     logoText: { type: String, default: 'KS. Cơ khí & Điện' },
@@ -98,6 +103,12 @@ const settingsSchema = new mongoose.Schema({
         default: 'Kỹ sư Cơ khí & Điện với 10+ năm kinh nghiệm trong lĩnh vực chế tạo máy và tự động hóa.'
     },
     copyrightText: { type: String, default: '© 2026 Nguyễn Văn A. All rights reserved.' },
+    footerLinks: { type: [footerLinkSchema], default: [
+        { label: 'Sản phẩm', path: '/products' },
+        { label: 'Dự án', path: '/projects' },
+        { label: 'Tài liệu', path: '/documents' },
+        { label: 'Liên hệ', path: '/contact' }
+    ] },
 
     // Social links
     facebook: { type: String, default: '' },
