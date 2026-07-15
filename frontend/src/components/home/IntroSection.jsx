@@ -15,7 +15,7 @@ const IntroSection = () => {
     return (
         <section style={styles.section}>
             <div className="container">
-                <div style={styles.grid}>
+                <div className="intro-grid">
                     <div>
                         <h2 style={styles.title}>Giới thiệu</h2>
                         <p style={styles.text}>
@@ -24,7 +24,7 @@ const IntroSection = () => {
                         <Link to="/about" className="btn btn-primary" style={styles.btn}>Tìm hiểu thêm</Link>
                     </div>
 
-                    <div style={styles.cards}>
+                    <div className="intro-cards">
                         <div style={styles.card}>
                             <GiGears size={48} color="var(--primary-color)" />
                             <h3>Cơ khí chính xác</h3>
@@ -38,7 +38,7 @@ const IntroSection = () => {
                     </div>
                 </div>
 
-                <div style={styles.stats}>
+                <div className="intro-stats">
                     {stats.map((stat, index) => (
                         <div key={index} style={styles.statItem}>
                             <div style={styles.statNumber}>{stat.number}</div>
@@ -56,12 +56,6 @@ const styles = {
         padding: '60px 0',
         background: 'var(--bg-light)'
     },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '48px',
-        marginBottom: '48px'
-    },
     title: {
         fontSize: '32px',
         color: 'var(--primary-color)',
@@ -72,25 +66,12 @@ const styles = {
         lineHeight: '1.8',
         marginBottom: '24px'
     },
-    cards: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '24px'
-    },
     card: {
         background: 'white',
         padding: '24px',
         borderRadius: '8px',
         textAlign: 'center',
         boxShadow: 'var(--shadow)'
-    },
-    stats: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, 1fr)',
-        gap: '24px',
-        textAlign: 'center',
-        paddingTop: '48px',
-        borderTop: '1px solid var(--border-color)'
     },
     statNumber: {
         fontSize: '36px',
