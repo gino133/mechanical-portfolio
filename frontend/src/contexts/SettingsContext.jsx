@@ -76,7 +76,14 @@ const DEFAULT_SETTINGS = {
         { label: 'Dự án', path: '/projects' },
         { label: 'Tài liệu', path: '/documents' },
         { label: 'Liên hệ', path: '/contact' }
-    ]
+    ],
+
+    // Chatbot / AI assistant
+    chatbotEnabled: true,
+    chatbotName: 'Trợ lý AI',
+    chatbotGreeting: 'Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn hôm nay?',
+    chatbotRules: [],
+    chatbotFallback: 'Cảm ơn bạn đã quan tâm! Bạn có thể xem thêm thông tin chi tiết tại các trang Sản phẩm, Dự án, hoặc để lại thông tin liên hệ để được tư vấn trực tiếp nhé!'
 };
 
 const DEFAULT_MENU = [

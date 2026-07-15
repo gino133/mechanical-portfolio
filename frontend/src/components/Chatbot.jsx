@@ -1,53 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { FiMessageSquare, FiX, FiSend } from 'react-icons/fi';
+import { useSettings } from '../contexts/SettingsContext';
 
 const Chatbot = () => {
+    const { settings } = useSettings();
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState([
-        { type: 'bot', text: 'Xin chào! Tôi là trợ lý AI của kỹ sư Nguyễn Văn A. Tôi có thể giúp gì cho bạn hôm nay?' }
-    ]);
+    const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isTyping, setIsTyping] = useState(false);
 
-    // Auto-reply logic (simulate AI - for demo)
-    // In production, replace with actual OpenAI API call
+    // Seed the greeting once settings have loaded from the server (falls
+    // back to the default greeting if settings are still loading).
+    useEffect(() => {
+        setMessages([{ type: 'bot', text: settings.chatbotGreeting }]);
+    }, [settings.chatbotGreeting]);
+
+    // Simple keyword matching against admin-configured rules. This is a
+    // basic canned-reply bot, not a real AI model - each rule is a set of
+    // comma-separated keywords mapped to one reply, editable from
+    // Admin > Cài đặt > Trợ lý AI.
     const getAutoReply = (userMessage) => {
         const msg = userMessage.toLowerCase();
-        
-        if (msg.includes('giá') || msg.includes('báo giá')) {
-            return "Cảm ơn bạn quan tâm! Vui lòng để lại thông tin liên hệ hoặc gửi email trực tiếp đến nguyenvana@email.com để nhận báo giá chi tiết nhé!";
+        const rules = settings.chatbotRules || [];
+
+        for (const rule of rules) {
+            const keywords = (rule.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+            if (keywords.some(k => k && msg.includes(k))) {
+                return rule.reply;
+            }
         }
-        if (msg.includes('cơ khí') || msg.includes('gia công')) {
-            return "Chúng tôi chuyên thiết kế và gia công cơ khí chính xác: băng tải, máy ép thủy lực, cầu trục, kết cấu thép... Bạn quan tâm đến sản phẩm nào cụ thể không?";
-        }
-        if (msg.includes('điện') || msg.includes('plc') || msg.includes('tủ điện')) {
-            return "Dịch vụ điện của chúng tôi bao gồm: thiết kế tủ điện công nghiệp, lập trình PLC, HMI, Scada. Bạn cần tư vấn về hệ thống nào?";
-        }
-        if (msg.includes('tài liệu') || msg.includes('bản vẽ')) {
-            return "Bạn có thể tải tài liệu kỹ thuật, bản vẽ CAD, SolidWorks tại trang Tài liệu trên website. Nếu cần tài liệu cụ thể, hãy cho tôi biết nhé!";
-        }
-        if (msg.includes('liên hệ') || msg.includes('email') || msg.includes('số điện thoại')) {
-            return "📧 Email: nguyenvana@email.com\n📞 Điện thoại: 0123 456 789\n🏢 Địa chỉ: Hà Nội, Việt Nam";
-        }
-        
-        return "Cảm ơn bạn đã quan tâm! Bạn có thể xem thêm thông tin chi tiết tại các trang Sản phẩm, Dự án, hoặc để lại thông tin liên hệ để tôi gọi lại tư vấn trực tiếp nhé!";
+
+        return settings.chatbotFallback;
     };
 
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
 
-        // Add user message
         const userMessage = { type: 'user', text: inputValue };
         setMessages(prev => [...prev, userMessage]);
         setInputValue('');
         setIsTyping(true);
 
-        // Simulate AI thinking
         setTimeout(() => {
             const reply = getAutoReply(inputValue);
             setMessages(prev => [...prev, { type: 'bot', text: reply }]);
             setIsTyping(false);
-        }, 1000);
+        }, 800);
     };
 
     const handleKeyPress = (e) => {
@@ -56,9 +54,11 @@ const Chatbot = () => {
         }
     };
 
+    // Admin can turn the widget off entirely from Cài đặt > Trợ lý AI
+    if (!settings.chatbotEnabled) return null;
+
     return (
         <>
-            {/* Chat Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 style={{
@@ -69,15 +69,13 @@ const Chatbot = () => {
                 <FiMessageSquare size={28} />
             </button>
 
-            {/* Chat Window */}
             {isOpen && (
                 <div style={styles.chatWindow}>
-                    {/* Header */}
                     <div style={styles.chatHeader}>
                         <div style={styles.chatHeaderInfo}>
                             <div style={styles.chatAvatar}>🤖</div>
                             <div>
-                                <div style={styles.chatTitle}>Trợ lý AI</div>
+                                <div style={styles.chatTitle}>{settings.chatbotName}</div>
                                 <div style={styles.chatStatus}>Online</div>
                             </div>
                         </div>
@@ -86,7 +84,6 @@ const Chatbot = () => {
                         </button>
                     </div>
 
-                    {/* Messages */}
                     <div style={styles.chatMessages}>
                         {messages.map((msg, index) => (
                             <div
@@ -106,7 +103,6 @@ const Chatbot = () => {
                         )}
                     </div>
 
-                    {/* Input */}
                     <div style={styles.chatInput}>
                         <input
                             type="text"
@@ -150,7 +146,9 @@ const styles = {
         bottom: '96px',
         right: '24px',
         width: '360px',
+        maxWidth: '92vw',
         height: '500px',
+        maxHeight: '75vh',
         background: 'white',
         borderRadius: '16px',
         boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
@@ -213,7 +211,8 @@ const styles = {
         borderRadius: '16px',
         fontSize: '14px',
         lineHeight: '1.4',
-        wordWrap: 'break-word'
+        wordWrap: 'break-word',
+        whiteSpace: 'pre-line'
     },
     userMessage: {
         background: 'var(--primary-color)',

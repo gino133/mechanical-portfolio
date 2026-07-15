@@ -65,6 +65,20 @@ const Settings = () => {
         setForm({ ...form, footerLinks: (form.footerLinks || []).filter((_, i) => i !== index) });
     };
 
+    const handleChatbotRuleChange = (index, field, value) => {
+        const newRules = [...(form.chatbotRules || [])];
+        newRules[index] = { ...newRules[index], [field]: value };
+        setForm({ ...form, chatbotRules: newRules });
+    };
+
+    const addChatbotRule = () => {
+        setForm({ ...form, chatbotRules: [...(form.chatbotRules || []), { keywords: '', reply: '' }] });
+    };
+
+    const removeChatbotRule = (index) => {
+        setForm({ ...form, chatbotRules: (form.chatbotRules || []).filter((_, i) => i !== index) });
+    };
+
     const handleSave = async () => {
         setSaving(true);
         setSaveMsg('');
@@ -81,6 +95,7 @@ const Settings = () => {
         { id: 'about', label: 'Giới thiệu' },
         { id: 'contact', label: 'Thông tin liên hệ' },
         { id: 'footer', label: 'Footer' },
+        { id: 'chatbot', label: 'Trợ lý AI' },
         { id: 'seo', label: 'SEO' }
     ];
 
@@ -420,6 +435,65 @@ const Settings = () => {
                 </div>
             )}
 
+            {/* Tab Chatbot / Trợ lý AI */}
+            {activeTab === 'chatbot' && (
+                <div style={styles.tabContent}>
+                    <h3>Trợ lý AI (khung chat góc màn hình)</h3>
+
+                    <label style={styles.checkboxRow}>
+                        <input
+                            type="checkbox"
+                            checked={form.chatbotEnabled !== false}
+                            onChange={(e) => setForm({ ...form, chatbotEnabled: e.target.checked })}
+                        />
+                        Bật hiển thị trợ lý AI trên website
+                    </label>
+
+                    <div style={styles.formGroup}>
+                        <label>Tên hiển thị</label>
+                        <input type="text" name="chatbotName" value={form.chatbotName || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+
+                    <div style={styles.formGroup}>
+                        <label>Lời chào mở đầu</label>
+                        <textarea name="chatbotGreeting" value={form.chatbotGreeting || ''} onChange={handleChange} style={styles.textarea} rows="2" />
+                    </div>
+
+                    <h3 style={{ marginTop: '32px' }}>Kịch bản trả lời tự động</h3>
+                    <p style={styles.hint}>
+                        Đây là bot trả lời theo từ khóa (không phải AI thật) — nếu tin nhắn của khách chứa 1 trong các từ khóa, bot sẽ trả lời đúng nội dung tương ứng.
+                        Nhiều từ khóa cách nhau bằng dấu phẩy.
+                    </p>
+                    {(form.chatbotRules || []).map((rule, index) => (
+                        <div key={index} style={styles.ruleRow}>
+                            <input
+                                type="text"
+                                value={rule.keywords}
+                                onChange={(e) => handleChatbotRuleChange(index, 'keywords', e.target.value)}
+                                style={{ ...styles.input, marginBottom: '8px' }}
+                                placeholder="Từ khóa, cách nhau bằng dấu phẩy (VD: giá, báo giá, chi phí)"
+                            />
+                            <textarea
+                                value={rule.reply}
+                                onChange={(e) => handleChatbotRuleChange(index, 'reply', e.target.value)}
+                                style={{ ...styles.textarea, minHeight: '60px' }}
+                                placeholder="Nội dung bot sẽ trả lời"
+                            />
+                            <button onClick={() => removeChatbotRule(index)} style={styles.iconBtnBlock} type="button">
+                                <FiTrash2 /> Xoá kịch bản này
+                            </button>
+                        </div>
+                    ))}
+                    <button onClick={addChatbotRule} style={styles.addBtn} type="button"><FiPlus /> Thêm kịch bản trả lời</button>
+
+                    <h3 style={{ marginTop: '32px' }}>Câu trả lời mặc định</h3>
+                    <p style={styles.hint}>Dùng khi tin nhắn của khách không khớp từ khóa nào ở trên.</p>
+                    <div style={styles.formGroup}>
+                        <textarea name="chatbotFallback" value={form.chatbotFallback || ''} onChange={handleChange} style={styles.textarea} rows="3" />
+                    </div>
+                </div>
+            )}
+
             {/* Tab SEO */}
             {activeTab === 'seo' && (
                 <div style={styles.tabContent}>
@@ -551,6 +625,33 @@ const styles = {
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center'
+    },
+    checkboxRow: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        marginBottom: '20px',
+        fontSize: '15px'
+    },
+    ruleRow: {
+        border: '1px solid #eee',
+        borderRadius: '8px',
+        padding: '12px',
+        marginBottom: '12px',
+        background: '#fafbfc'
+    },
+    iconBtnBlock: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: '#fee',
+        color: '#c00',
+        border: 'none',
+        borderRadius: '6px',
+        padding: '8px 12px',
+        cursor: 'pointer',
+        fontSize: '13px',
+        marginTop: '8px'
     },
     addBtn: {
         display: 'flex',

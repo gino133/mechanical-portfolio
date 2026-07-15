@@ -23,6 +23,12 @@ const footerLinkSchema = new mongoose.Schema({
     path: { type: String, required: true }
 }, { _id: false });
 
+const chatbotRuleSchema = new mongoose.Schema({
+    // Comma-separated keywords, e.g. "giá, báo giá, chi phí"
+    keywords: { type: String, required: true },
+    reply: { type: String, required: true }
+}, { _id: false });
+
 const settingsSchema = new mongoose.Schema({
     // Branding
     logoText: { type: String, default: 'KS. Cơ khí & Điện' },
@@ -123,7 +129,26 @@ const settingsSchema = new mongoose.Schema({
         { id: 4, label: 'Dự án', path: '/projects', order: 4, visible: true },
         { id: 5, label: 'Tài liệu', path: '/documents', order: 5, visible: true },
         { id: 6, label: 'Liên hệ', path: '/contact', order: 6, visible: true }
-    ] }
+    ] },
+
+    // Chatbot / AI assistant widget
+    chatbotEnabled: { type: Boolean, default: true },
+    chatbotName: { type: String, default: 'Trợ lý AI' },
+    chatbotGreeting: {
+        type: String,
+        default: 'Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn hôm nay?'
+    },
+    chatbotRules: { type: [chatbotRuleSchema], default: [
+        { keywords: 'giá, báo giá, chi phí', reply: 'Cảm ơn bạn quan tâm! Vui lòng để lại thông tin liên hệ hoặc gửi email trực tiếp để nhận báo giá chi tiết nhé!' },
+        { keywords: 'cơ khí, gia công', reply: 'Chúng tôi chuyên thiết kế và gia công cơ khí chính xác: băng tải, máy ép thủy lực, cầu trục, kết cấu thép... Bạn quan tâm đến sản phẩm nào cụ thể không?' },
+        { keywords: 'điện, plc, tủ điện', reply: 'Dịch vụ điện của chúng tôi bao gồm: thiết kế tủ điện công nghiệp, lập trình PLC, HMI, Scada. Bạn cần tư vấn về hệ thống nào?' },
+        { keywords: 'tài liệu, bản vẽ', reply: 'Bạn có thể tải tài liệu kỹ thuật, bản vẽ CAD, SolidWorks tại trang Tài liệu trên website. Nếu cần tài liệu cụ thể, hãy cho tôi biết nhé!' },
+        { keywords: 'liên hệ, email, số điện thoại', reply: 'Bạn có thể xem thông tin liên hệ đầy đủ ở cuối trang, hoặc để lại lời nhắn ở trang Liên hệ, tôi sẽ chuyển tới đội ngũ hỗ trợ nhé!' }
+    ] },
+    chatbotFallback: {
+        type: String,
+        default: 'Cảm ơn bạn đã quan tâm! Bạn có thể xem thêm thông tin chi tiết tại các trang Sản phẩm, Dự án, hoặc để lại thông tin liên hệ để được tư vấn trực tiếp nhé!'
+    }
 }, { timestamps: true });
 
 // Singleton helper: there should only ever be one Settings document.
