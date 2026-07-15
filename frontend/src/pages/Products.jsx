@@ -1,49 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSearch } from 'react-icons/fi';
+import { productAPI, categoryAPI } from '../services/api';
 
 const Products = () => {
     const [products, setProducts] = useState([]);
-    const [filteredProducts, setFilteredProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('all');
 
-    const categories = ['Tất cả', 'Cơ khí', 'Điện'];
-
     useEffect(() => {
-        // Demo data
-        const demoProducts = [
-            { id: 1, name: 'Băng tải cao su', code: 'BT-100', category: 'Cơ khí', specs: 'Tải 500kg/m, dài 10m', thumbnail: 'https://via.placeholder.com/300x200?text=Bang+tai' },
-            { id: 2, name: 'Máy ép thủy lực 50T', code: 'EP-50', category: 'Cơ khí', specs: 'Lực ép 50 tấn, hành trình 300mm', thumbnail: 'https://via.placeholder.com/300x200?text=May+ep' },
-            { id: 3, name: 'Tủ điện PLC Siemens', code: 'PLC-01', category: 'Điện', specs: '8 ngõ vào, 6 ngõ ra', thumbnail: 'https://via.placeholder.com/300x200?text=Tu+dien' },
-            { id: 4, name: 'Con lăn băng tải', code: 'CL-89', category: 'Cơ khí', specs: 'Φ89mm, dày 3mm', thumbnail: 'https://via.placeholder.com/300x200?text=Con+lan' },
-            { id: 5, name: 'Hệ thống báo mức', code: 'LM-01', category: 'Điện', specs: 'Cảm biến siêu âm, 4-20mA', thumbnail: 'https://via.placeholder.com/300x200?text=Bao+muc' },
-            { id: 6, name: 'Bánh răng công nghiệp', code: 'BR-100', category: 'Cơ khí', specs: 'Module 5, 50 răng', thumbnail: 'https://via.placeholder.com/300x200?text=Banh+rang' }
-        ];
-        setProducts(demoProducts);
-        setFilteredProducts(demoProducts);
-        setLoading(false);
+        fetchCategories();
     }, []);
 
     useEffect(() => {
-        let filtered = products;
-        
-        if (activeCategory !== 'all') {
-            filtered = filtered.filter(p => p.category === activeCategory);
-        }
-        
-        if (searchTerm) {
-            filtered = filtered.filter(p => 
-                p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                p.code.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-        
-        setFilteredProducts(filtered);
-    }, [searchTerm, activeCategory, products]);
+        fetchProducts();
+    }, [activeCategory, searchTerm]);
 
-    if (loading) return <div className="spinner"></div>;
+    const fetchCategories = async () => {
+        try {
+            const response = await categoryAPI.getByType('product');
+            setCategories(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải danh mục:', error);
+        }
+    };
+
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            const params = { limit: 100 };
+            if (activeCategory !== 'all') params.category = activeCategory;
+            if (searchTerm) params.search = searchTerm;
+            const response = await productAPI.getAll(params);
+            setProducts(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải sản phẩm:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading && products.length === 0) return <div className="spinner"></div>;
 
     return (
         <div>
@@ -68,36 +67,42 @@ const Products = () => {
                         />
                     </div>
 
-                    {/* Category Filter */}
+                    {/* Category Filter - dynamic from admin-managed categories */}
                     <div style={styles.categories}>
+                        <button
+                            onClick={() => setActiveCategory('all')}
+                            style={{ ...styles.categoryBtn, ...(activeCategory === 'all' && styles.categoryBtnActive) }}
+                        >
+                            Tất cả
+                        </button>
                         {categories.map(cat => (
                             <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat === 'Tất cả' ? 'all' : cat)}
+                                key={cat._id}
+                                onClick={() => setActiveCategory(cat.name)}
                                 style={{
                                     ...styles.categoryBtn,
-                                    ...(activeCategory === (cat === 'Tất cả' ? 'all' : cat) && styles.categoryBtnActive)
+                                    ...(activeCategory === cat.name && styles.categoryBtnActive)
                                 }}
                             >
-                                {cat}
+                                {cat.name}
                             </button>
                         ))}
                     </div>
 
                     {/* Products Grid */}
-                    {filteredProducts.length === 0 ? (
-                        <p style={styles.noResults}>Không tìm thấy sản phẩm nào</p>
+                    {products.length === 0 ? (
+                        <p style={styles.noResults}>Chưa có sản phẩm nào trong mục này</p>
                     ) : (
                         <div className="grid grid-3">
-                            {filteredProducts.map(product => (
-                                <div key={product.id} className="card">
+                            {products.map(product => (
+                                <div key={product._id} className="card">
                                     <img src={product.thumbnail} alt={product.name} className="card-image" />
                                     <div className="card-content">
-                                        <span className="card-category">{product.category}</span>
+                                        <span className="card-category">{product.category?.name}</span>
                                         <h3 className="card-title">{product.name}</h3>
                                         <p>Mã: {product.code}</p>
-                                        <p style={styles.specs}>{product.specs}</p>
-                                        <Link to={`/products/${product.id}`} className="btn btn-outline" style={styles.btn}>
+                                        <p style={styles.specs}>{product.description}</p>
+                                        <Link to={`/products/${product._id}`} className="btn btn-outline" style={styles.btn}>
                                             Xem chi tiết
                                         </Link>
                                     </div>

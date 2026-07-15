@@ -1,41 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { projectAPI, categoryAPI } from '../services/api';
 
 const Projects = () => {
     const [projects, setProjects] = useState([]);
-    const [filteredProjects, setFilteredProjects] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
 
     useEffect(() => {
-        const demoProjects = [
-            { id: 1, name: 'Cầu trục 10 tấn', client: 'Nhà máy XYZ', category: 'Cơ khí', year: 2024, 
-              description: 'Thiết kế và chế tạo cầu trục 10 tấn cho nhà máy sản xuất thép',
-              thumbnail: 'https://via.placeholder.com/400x250?text=Cau+truc' },
-            { id: 2, name: 'Hệ thống băng tải tự động', client: 'Công ty ABC', category: 'Cơ khí', year: 2023,
-              description: 'Hệ thống băng tải vận chuyển than cốc cho nhà máy xi măng',
-              thumbnail: 'https://via.placeholder.com/400x250?text=Bang+tai' },
-            { id: 3, name: 'Tủ điện điều khiển trung tâm', client: 'Nhà máy DEF', category: 'Điện', year: 2024,
-              description: 'Lắp đặt tủ điện PLC điều khiển toàn bộ dây chuyền sản xuất',
-              thumbnail: 'https://via.placeholder.com/400x250?text=Tu+dien' },
-            { id: 4, name: 'Máy ép phế liệu 100T', client: 'Công ty GHI', category: 'Cơ khí', year: 2023,
-              description: 'Chế tạo máy ép thủy lực 100 tấn cho nhà máy tái chế',
-              thumbnail: 'https://via.placeholder.com/400x250?text=May+ep' }
-        ];
-        setProjects(demoProjects);
-        setFilteredProjects(demoProjects);
-        setLoading(false);
+        fetchCategories();
     }, []);
 
     useEffect(() => {
-        if (activeCategory === 'all') {
-            setFilteredProjects(projects);
-        } else {
-            setFilteredProjects(projects.filter(p => p.category === activeCategory));
-        }
-    }, [activeCategory, projects]);
+        fetchProjects();
+    }, [activeCategory]);
 
-    if (loading) return <div className="spinner"></div>;
+    const fetchCategories = async () => {
+        try {
+            const response = await categoryAPI.getByType('project');
+            setCategories(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải danh mục:', error);
+        }
+    };
+
+    const fetchProjects = async () => {
+        setLoading(true);
+        try {
+            const params = { limit: 100 };
+            if (activeCategory !== 'all') params.category = activeCategory;
+            const response = await projectAPI.getAll(params);
+            setProjects(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải dự án:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading && projects.length === 0) return <div className="spinner"></div>;
 
     return (
         <div>
@@ -51,41 +55,42 @@ const Projects = () => {
                     <div style={styles.categories}>
                         <button
                             onClick={() => setActiveCategory('all')}
-                            style={{...styles.categoryBtn, ...(activeCategory === 'all' && styles.categoryBtnActive)}}
+                            style={{ ...styles.categoryBtn, ...(activeCategory === 'all' && styles.categoryBtnActive) }}
                         >
                             Tất cả
                         </button>
-                        <button
-                            onClick={() => setActiveCategory('Cơ khí')}
-                            style={{...styles.categoryBtn, ...(activeCategory === 'Cơ khí' && styles.categoryBtnActive)}}
-                        >
-                            ⚙️ Cơ khí
-                        </button>
-                        <button
-                            onClick={() => setActiveCategory('Điện')}
-                            style={{...styles.categoryBtn, ...(activeCategory === 'Điện' && styles.categoryBtnActive)}}
-                        >
-                            ⚡ Điện
-                        </button>
-                    </div>
-
-                    <div className="grid grid-2">
-                        {filteredProjects.map(project => (
-                            <div key={project.id} className="card">
-                                <img src={project.thumbnail} alt={project.name} className="card-image" />
-                                <div className="card-content">
-                                    <span className="card-category">{project.category}</span>
-                                    <h3 className="card-title">{project.name}</h3>
-                                    <p><strong>Khách hàng:</strong> {project.client}</p>
-                                    <p><strong>Năm:</strong> {project.year}</p>
-                                    <p>{project.description}</p>
-                                    <Link to={`/projects/${project.id}`} className="btn btn-primary" style={styles.btn}>
-                                        Xem chi tiết →
-                                    </Link>
-                                </div>
-                            </div>
+                        {categories.map(cat => (
+                            <button
+                                key={cat._id}
+                                onClick={() => setActiveCategory(cat.name)}
+                                style={{ ...styles.categoryBtn, ...(activeCategory === cat.name && styles.categoryBtnActive) }}
+                            >
+                                {cat.name}
+                            </button>
                         ))}
                     </div>
+
+                    {projects.length === 0 ? (
+                        <p style={styles.noResults}>Chưa có dự án nào trong mục này</p>
+                    ) : (
+                        <div className="grid grid-2">
+                            {projects.map(project => (
+                                <div key={project._id} className="card">
+                                    <img src={project.thumbnail} alt={project.name} className="card-image" />
+                                    <div className="card-content">
+                                        <span className="card-category">{project.category?.name}</span>
+                                        <h3 className="card-title">{project.name}</h3>
+                                        <p><strong>Khách hàng:</strong> {project.client}</p>
+                                        <p><strong>Năm:</strong> {project.year}</p>
+                                        <p>{project.description}</p>
+                                        <Link to={`/projects/${project._id}`} className="btn btn-primary" style={styles.btn}>
+                                            Xem chi tiết →
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
         </div>
@@ -114,7 +119,8 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         gap: '16px',
-        marginBottom: '40px'
+        marginBottom: '40px',
+        flexWrap: 'wrap'
     },
     categoryBtn: {
         padding: '10px 24px',
@@ -132,6 +138,11 @@ const styles = {
     btn: {
         marginTop: '16px',
         display: 'inline-block'
+    },
+    noResults: {
+        textAlign: 'center',
+        padding: '40px',
+        color: '#999'
     }
 };
 

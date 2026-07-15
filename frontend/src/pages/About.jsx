@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GiGraduateCap, GiTrophy } from 'react-icons/gi';
 import { useSettings } from '../contexts/SettingsContext';
+import ImageLightbox from '../components/common/ImageLightbox';
 
 const About = () => {
     const { settings } = useSettings();
+    const [lightboxImage, setLightboxImage] = useState(null);
 
     const skills = settings.skills && settings.skills.length > 0 ? settings.skills : [];
     const certificates = settings.certificates && settings.certificates.length > 0
@@ -21,12 +23,13 @@ const About = () => {
 
             <section style={styles.section}>
                 <div className="container">
-                    <div style={styles.grid}>
+                    <div className="about-grid">
                         <div>
                             <img
                                 src={settings.avatarImage}
                                 alt="Profile"
-                                style={styles.avatar}
+                                style={{ ...styles.avatar, cursor: 'zoom-in' }}
+                                onClick={() => setLightboxImage(settings.avatarImage)}
                             />
                         </div>
                         <div>
@@ -38,7 +41,7 @@ const About = () => {
                                 {settings.aboutIntro2}
                             </p>
 
-                            <div style={styles.infoGrid}>
+                            <div className="about-info-grid">
                                 <div><strong>📧 Email:</strong> {settings.email}</div>
                                 <div><strong>📱 Điện thoại:</strong> {settings.phone}</div>
                                 <div><strong>📍 Địa chỉ:</strong> {settings.address}</div>
@@ -103,6 +106,8 @@ const About = () => {
                     </div>
                 </section>
             )}
+
+            <ImageLightbox src={lightboxImage} alt="Ảnh đại diện" onClose={() => setLightboxImage(null)} />
         </div>
     );
 };

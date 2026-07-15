@@ -1,34 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiDownload, FiMail, FiPhone } from 'react-icons/fi';
+import { productAPI } from '../services/api';
+import { useSettings } from '../contexts/SettingsContext';
+import ImageLightbox from '../components/common/ImageLightbox';
 
 const ProductDetail = () => {
     const { id } = useParams();
+    const { settings } = useSettings();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [lightboxImage, setLightboxImage] = useState(null);
 
     useEffect(() => {
-        // Demo data - get product by id
-        const demoProducts = {
-            1: { id: 1, name: 'Băng tải cao su', code: 'BT-100', category: 'Cơ khí', 
-                specs: { material: 'Cao su chịu mài mòn', dimensions: 'Dài 10m, Rộng 500mm', 
-                        load: '500kg/m', speed: '1-2m/s' },
-                description: 'Băng tải cao su chất lượng cao, phù hợp cho các nhà máy sản xuất, khai thác mỏ.',
-                documents: ['BV_BT100.pdf', 'HD_SD_BT100.pdf'],
-                images: ['https://via.placeholder.com/600x400?text=Image+1', 'https://via.placeholder.com/600x400?text=Image+2'] },
-            2: { id: 2, name: 'Máy ép thủy lực 50T', code: 'EP-50', category: 'Cơ khí',
-                specs: { pressure: '50 tấn', stroke: '300mm', motor: '7.5kW', 
-                        dimensions: '2000x1500x2500mm' },
-                description: 'Máy ép thủy lực công suất lớn, điều khiển bằng PLC, an toàn và chính xác.',
-                documents: ['BV_EP50.pdf', 'Thongso_EP50.pdf'],
-                images: ['https://via.placeholder.com/600x400?text=Image+1'] }
-        };
-        setProduct(demoProducts[id] || demoProducts[1]);
-        setLoading(false);
+        fetchProduct();
     }, [id]);
 
+    const fetchProduct = async () => {
+        setLoading(true);
+        try {
+            const response = await productAPI.getById(id);
+            const data = response.data.data;
+            setProduct(data);
+            const images = data.images && data.images.length > 0 ? data.images : [data.thumbnail];
+            setSelectedImage(images[0]);
+        } catch (error) {
+            console.error('Lỗi tải sản phẩm:', error);
+            setProduct(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return <div className="spinner"></div>;
-    if (!product) return <div>Không tìm thấy sản phẩm</div>;
+    if (!product) return <div style={{ padding: '60px', textAlign: 'center' }}>Không tìm thấy sản phẩm</div>;
+
+    const images = product.images && product.images.length > 0 ? product.images : [product.thumbnail];
+    const specs = product.specifications && typeof product.specifications === 'object' ? product.specifications : {};
 
     return (
         <div>
@@ -44,20 +53,50 @@ const ProductDetail = () => {
                 <div className="container">
                     <div style={styles.grid}>
                         <div>
-                            <img src={product.images[0]} alt={product.name} style={styles.mainImage} />
+                            {/* Main image - click to open the popup preview */}
+                            <img
+                                src={selectedImage}
+                                alt={product.name}
+                                style={styles.mainImage}
+                                onClick={() => setLightboxImage(selectedImage)}
+                            />
+
+                            {/* Thumbnails - click (or hover) to swap the main image above.
+                                Only shown when there's more than one image. */}
+                            {images.length > 1 && (
+                                <div style={styles.thumbRow}>
+                                    {images.map((img, index) => (
+                                        <img
+                                            key={index}
+                                            src={img}
+                                            alt={`${product.name} ${index + 1}`}
+                                            onMouseEnter={() => setSelectedImage(img)}
+                                            onClick={() => setSelectedImage(img)}
+                                            style={{
+                                                ...styles.thumb,
+                                                ...(selectedImage === img ? styles.thumbActive : {})
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div>
                             <h2>Thông số kỹ thuật</h2>
-                            <table style={styles.specsTable}>
-                                <tbody>
-                                    {Object.entries(product.specs).map(([key, value]) => (
-                                        <tr key={key}>
-                                            <th style={styles.specsTh}>{key}</th>
-                                            <td style={styles.specsTd}>{value}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            {Object.keys(specs).length > 0 ? (
+                                <table style={styles.specsTable}>
+                                    <tbody>
+                                        {Object.entries(specs).map(([key, value]) => (
+                                            <tr key={key}>
+                                                <th style={styles.specsTh}>{key}</th>
+                                                <td style={styles.specsTd}>{String(value)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p style={{ color: '#999' }}>Chưa cập nhật thông số kỹ thuật.</p>
+                            )}
                         </div>
                     </div>
 
@@ -66,28 +105,34 @@ const ProductDetail = () => {
                         <p>{product.description}</p>
                     </div>
 
-                    <div style={styles.documents}>
-                        <h2>Tài liệu đính kèm</h2>
-                        <ul style={styles.docList}>
-                            {product.documents.map((doc, index) => (
-                                <li key={index} style={styles.docItem}>
-                                    <FiDownload />
-                                    <a href="#" style={styles.docLink}>{doc}</a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                    {product.documents && product.documents.length > 0 && (
+                        <div style={styles.documents}>
+                            <h2>Tài liệu đính kèm</h2>
+                            <ul style={styles.docList}>
+                                {product.documents.map((doc) => (
+                                    <li key={doc._id} style={styles.docItem}>
+                                        <FiDownload />
+                                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.docLink}>
+                                            {doc.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
 
                     <div style={styles.contactBox}>
                         <h3>Quan tâm đến sản phẩm này?</h3>
                         <p>Liên hệ để được tư vấn và báo giá</p>
                         <div style={styles.contactButtons}>
-                            <button className="btn btn-primary"><FiMail /> Gửi email</button>
-                            <button className="btn btn-outline"><FiPhone /> Gọi điện</button>
+                            <a href={`mailto:${settings.email}`} className="btn btn-primary"><FiMail /> Gửi email</a>
+                            <a href={`tel:${settings.phone}`} className="btn btn-outline"><FiPhone /> Gọi điện</a>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <ImageLightbox src={lightboxImage} alt={product.name} onClose={() => setLightboxImage(null)} />
         </div>
     );
 };
@@ -120,7 +165,30 @@ const styles = {
     mainImage: {
         width: '100%',
         borderRadius: '8px',
-        boxShadow: 'var(--shadow)'
+        boxShadow: 'var(--shadow)',
+        cursor: 'zoom-in',
+        aspectRatio: '4 / 3',
+        objectFit: 'cover'
+    },
+    thumbRow: {
+        display: 'flex',
+        gap: '10px',
+        marginTop: '12px',
+        flexWrap: 'wrap'
+    },
+    thumb: {
+        width: '70px',
+        height: '70px',
+        objectFit: 'cover',
+        borderRadius: '6px',
+        cursor: 'pointer',
+        border: '2px solid transparent',
+        opacity: 0.7,
+        transition: 'all 0.2s'
+    },
+    thumbActive: {
+        border: '2px solid var(--primary-color)',
+        opacity: 1
     },
     specsTable: {
         width: '100%',

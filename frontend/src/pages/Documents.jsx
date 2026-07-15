@@ -1,47 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import { FiSearch, FiDownload, FiEye } from 'react-icons/fi';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FiSearch, FiDownload, FiEye, FiFile } from 'react-icons/fi';
+import { documentAPI, categoryAPI } from '../services/api';
+
+const UNCATEGORIZED_KEY = '__uncategorized__';
 
 const Documents = () => {
     const [documents, setDocuments] = useState([]);
-    const [filteredDocs, setFilteredDocs] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('all');
-
-    const categories = ['Tất cả', 'Bản vẽ CAD', 'Bản vẽ SolidWorks', 'Thuyết minh', 'Tiêu chuẩn', 'Hướng dẫn'];
 
     useEffect(() => {
-        const demoDocuments = [
-            { id: 1, name: 'Ban ve khung bang tai.dwg', type: 'Bản vẽ CAD', size: '2.5MB', date: '15/05/2026', project: 'Băng tải' },
-            { id: 2, name: 'Thiet ke cau truc 10 tan.pdf', type: 'Thuyết minh', size: '1.2MB', date: '10/05/2026', project: 'Cầu trục' },
-            { id: 3, name: 'Tieu chuan TCVN 5575-2024.docx', type: 'Tiêu chuẩn', size: '0.8MB', date: '05/05/2026', project: 'Tiêu chuẩn' },
-            { id: 4, name: 'Huong dan lap dat tu dien PLC.pdf', type: 'Hướng dẫn', size: '3.1MB', date: '01/05/2026', project: 'Tủ điện' },
-            { id: 5, name: '3D model bang tai.SLDPRT', type: 'Bản vẽ SolidWorks', size: '15MB', date: '28/04/2026', project: 'Băng tải' },
-            { id: 6, name: 'Ban ve chi tiet con lan.dwg', type: 'Bản vẽ CAD', size: '0.5MB', date: '20/04/2026', project: 'Con lăn' }
-        ];
-        setDocuments(demoDocuments);
-        setFilteredDocs(demoDocuments);
-        setLoading(false);
+        fetchAll();
     }, []);
 
-    useEffect(() => {
-        let filtered = documents;
-        
-        if (activeCategory !== 'all') {
-            filtered = filtered.filter(d => d.type === activeCategory);
+    const fetchAll = async () => {
+        setLoading(true);
+        try {
+            const [docsRes, catsRes] = await Promise.all([
+                documentAPI.getAll({ limit: 500 }),
+                categoryAPI.getByType('document')
+            ]);
+            setDocuments(docsRes.data.data);
+            setCategories(catsRes.data.data);
+        } catch (error) {
+            console.error('Lỗi tải tài liệu:', error);
+        } finally {
+            setLoading(false);
         }
-        
-        if (searchTerm) {
-            filtered = filtered.filter(d => 
-                d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                d.project.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+    };
+
+    const filteredDocs = useMemo(() => {
+        if (!searchTerm) return documents;
+        const term = searchTerm.toLowerCase();
+        return documents.filter(d => d.name.toLowerCase().includes(term));
+    }, [documents, searchTerm]);
+
+    // Group documents into columns: one column per category (in the admin-
+    // defined order) plus a trailing "Chưa phân loại" column for documents
+    // uploaded without a category. Split into a max of 5 columns per row -
+    // CSS Grid auto-wraps extra columns onto new rows.
+    const columns = useMemo(() => {
+        const byCategory = {};
+        for (const cat of categories) {
+            byCategory[cat._id] = { id: cat._id, label: cat.name, docs: [] };
         }
-        
-        setFilteredDocs(filtered);
-    }, [searchTerm, activeCategory, documents]);
+        const uncategorized = { id: UNCATEGORIZED_KEY, label: 'Chưa phân loại', docs: [] };
+
+        for (const doc of filteredDocs) {
+            const catId = doc.category?._id;
+            if (catId && byCategory[catId]) {
+                byCategory[catId].docs.push(doc);
+            } else {
+                uncategorized.docs.push(doc);
+            }
+        }
+
+        const cols = Object.values(byCategory);
+        if (uncategorized.docs.length > 0) cols.push(uncategorized);
+        return cols;
+    }, [categories, filteredDocs]);
+
+    const handleView = (doc) => {
+        window.open(doc.fileUrl, '_blank', 'noopener,noreferrer');
+    };
+
+    const handleDownload = async (doc) => {
+        try {
+            const response = await documentAPI.getDownloadUrl(doc._id);
+            window.open(response.data.data.url, '_blank', 'noopener,noreferrer');
+        } catch (error) {
+            console.error('Lỗi tải xuống:', error);
+            // Fall back to opening the stored file URL directly
+            window.open(doc.fileUrl, '_blank', 'noopener,noreferrer');
+        }
+    };
 
     if (loading) return <div className="spinner"></div>;
+
+    const columnCount = Math.max(1, Math.min(5, columns.length));
 
     return (
         <div>
@@ -65,57 +102,47 @@ const Documents = () => {
                         />
                     </div>
 
-                    <div style={styles.categories}>
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat === 'Tất cả' ? 'all' : cat)}
-                                style={{
-                                    ...styles.categoryBtn,
-                                    ...(activeCategory === (cat === 'Tất cả' ? 'all' : cat) && styles.categoryBtnActive)
-                                }}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div style={styles.tableWrapper}>
-                        <table style={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>Tên tài liệu</th>
-                                    <th>Loại</th>
-                                    <th>Dung lượng</th>
-                                    <th>Ngày cập nhật</th>
-                                    <th>Dự án liên quan</th>
-                                    <th>Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredDocs.map(doc => (
-                                    <tr key={doc.id}>
-                                        <td style={styles.fileName}>{doc.name}</td>
-                                        <td><span style={styles.typeBadge}>{doc.type}</span></td>
-                                        <td>{doc.size}</td>
-                                        <td>{doc.date}</td>
-                                        <td>{doc.project}</td>
-                                        <td>
-                                            <button style={styles.actionBtn} title="Xem trước">
-                                                <FiEye />
-                                            </button>
-                                            <button style={styles.actionBtn} title="Tải xuống">
-                                                <FiDownload />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    {filteredDocs.length === 0 && (
-                        <p style={styles.noResults}>Không tìm thấy tài liệu nào</p>
+                    {columns.length === 0 ? (
+                        <p style={styles.noResults}>Chưa có tài liệu nào được tải lên</p>
+                    ) : (
+                        <div style={{ ...styles.board, gridTemplateColumns: `repeat(${columnCount}, minmax(220px, 1fr))` }}>
+                            {columns.map(col => (
+                                <div key={col.id} style={styles.column}>
+                                    <div style={styles.columnHeader}>
+                                        <span>{col.label}</span>
+                                        <span style={styles.countBadge}>{col.docs.length}</span>
+                                    </div>
+                                    <div style={styles.columnBody}>
+                                        {col.docs.length === 0 && (
+                                            <p style={styles.emptyCol}>Không có tài liệu</p>
+                                        )}
+                                        {col.docs.map(doc => (
+                                            <div key={doc._id} style={styles.docCard}>
+                                                <div style={styles.docIcon}><FiFile /></div>
+                                                <div style={styles.docInfo}>
+                                                    <p style={styles.docName} title={doc.name}>{doc.name}</p>
+                                                    <div style={styles.docMeta}>
+                                                        <span style={styles.typeBadge}>{doc.fileType?.toUpperCase()}</span>
+                                                        <span>{doc.fileSize ? (doc.fileSize / 1024 / 1024).toFixed(2) + ' MB' : ''}</span>
+                                                    </div>
+                                                    <p style={styles.docDate}>
+                                                        {new Date(doc.uploadedAt).toLocaleDateString('vi-VN')}
+                                                    </p>
+                                                </div>
+                                                <div style={styles.docActions}>
+                                                    <button onClick={() => handleView(doc)} style={styles.actionBtn} title="Xem trước">
+                                                        <FiEye />
+                                                    </button>
+                                                    <button onClick={() => handleDownload(doc)} style={styles.actionBtn} title="Tải xuống">
+                                                        <FiDownload />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </section>
@@ -160,50 +187,102 @@ const styles = {
         borderRadius: '8px',
         fontSize: '16px'
     },
-    categories: {
+    board: {
+        display: 'grid',
+        gap: '20px',
+        alignItems: 'start'
+    },
+    column: {
+        background: '#f5f7fa',
+        borderRadius: '10px',
+        overflow: 'hidden',
         display: 'flex',
-        justifyContent: 'center',
-        gap: '12px',
-        marginBottom: '40px',
-        flexWrap: 'wrap'
+        flexDirection: 'column'
     },
-    categoryBtn: {
-        padding: '8px 20px',
-        border: '1px solid var(--border-color)',
-        background: 'white',
-        borderRadius: '25px',
-        cursor: 'pointer',
-        transition: 'all 0.3s'
-    },
-    categoryBtnActive: {
+    columnHeader: {
         background: 'var(--primary-color)',
         color: 'white',
-        borderColor: 'var(--primary-color)'
+        padding: '12px 16px',
+        fontWeight: 'bold',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
     },
-    tableWrapper: {
-        overflowX: 'auto'
+    countBadge: {
+        background: 'rgba(255,255,255,0.25)',
+        borderRadius: '12px',
+        padding: '2px 10px',
+        fontSize: '13px'
     },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse'
+    columnBody: {
+        padding: '12px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        minHeight: '80px'
     },
-    fileName: {
-        fontWeight: '500'
+    emptyCol: {
+        color: '#999',
+        fontSize: '13px',
+        textAlign: 'center',
+        padding: '16px 0'
+    },
+    docCard: {
+        background: 'white',
+        borderRadius: '8px',
+        padding: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        display: 'flex',
+        gap: '10px',
+        alignItems: 'flex-start'
+    },
+    docIcon: {
+        fontSize: '20px',
+        color: 'var(--primary-color)',
+        marginTop: '2px'
+    },
+    docInfo: {
+        flex: 1,
+        minWidth: 0
+    },
+    docName: {
+        fontWeight: '500',
+        fontSize: '14px',
+        marginBottom: '6px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap'
+    },
+    docMeta: {
+        display: 'flex',
+        gap: '8px',
+        alignItems: 'center',
+        fontSize: '12px',
+        color: 'var(--text-light)',
+        marginBottom: '4px'
     },
     typeBadge: {
-        display: 'inline-block',
-        padding: '4px 12px',
         background: '#e3f2fd',
-        borderRadius: '20px',
-        fontSize: '12px'
+        padding: '2px 8px',
+        borderRadius: '12px',
+        fontSize: '11px'
+    },
+    docDate: {
+        fontSize: '12px',
+        color: '#999'
+    },
+    docActions: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
     },
     actionBtn: {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        marginRight: '8px',
-        fontSize: '18px',
-        color: 'var(--primary-color)'
+        fontSize: '16px',
+        color: 'var(--primary-color)',
+        padding: '4px'
     },
     noResults: {
         textAlign: 'center',

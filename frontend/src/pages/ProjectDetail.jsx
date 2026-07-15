@@ -1,31 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiDownload, FiImage } from 'react-icons/fi';
+import { FiDownload } from 'react-icons/fi';
+import { projectAPI } from '../services/api';
+import ImageLightbox from '../components/common/ImageLightbox';
 
 const ProjectDetail = () => {
     const { id } = useParams();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [lightboxImage, setLightboxImage] = useState(null);
 
     useEffect(() => {
-        const demoProjects = {
-            1: { id: 1, name: 'Cầu trục 10 tấn', client: 'Nhà máy XYZ', category: 'Cơ khí', year: 2024,
-                description: 'Dự án thiết kế và chế tạo cầu trục 10 tấn phục vụ nhà máy sản xuất thép. Cầu trục có khẩu độ 20m, chiều cao nâng 12m, được trang bị hệ thống điều khiển từ xa an toàn.',
-                technicalInfo: { capacity: '10 tấn', span: '20m', liftingHeight: '12m', speed: '8m/phút' },
-                gallery: ['https://via.placeholder.com/800x500?text=Hinh+1', 'https://via.placeholder.com/800x500?text=Hinh+2'],
-                documents: ['BVKT_Cautruc.pdf', 'Thuyetminh_Cautruc.pdf', 'Bantinh_Cautruc.xlsx'] },
-            2: { id: 2, name: 'Hệ thống băng tải tự động', client: 'Công ty ABC', category: 'Cơ khí', year: 2023,
-                description: 'Thiết kế và lắp đặt hệ thống băng tải vận chuyển than cốc cho nhà máy xi măng. Hệ thống dài 150m, công suất 200 tấn/giờ.',
-                technicalInfo: { length: '150m', capacity: '200 tấn/h', motor: '30kW', beltWidth: '800mm' },
-                gallery: ['https://via.placeholder.com/800x500?text=Bang+tai'],
-                documents: ['BV_Bangtai.pdf', 'Dieukhien_Bangtai.pdf'] }
-        };
-        setProject(demoProjects[id] || demoProjects[1]);
-        setLoading(false);
+        fetchProject();
     }, [id]);
 
+    const fetchProject = async () => {
+        setLoading(true);
+        try {
+            const response = await projectAPI.getById(id);
+            setProject(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải dự án:', error);
+            setProject(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading) return <div className="spinner"></div>;
-    if (!project) return <div>Không tìm thấy dự án</div>;
+    if (!project) return <div style={{ padding: '60px', textAlign: 'center' }}>Không tìm thấy dự án</div>;
+
+    const technicalInfo = project.technicalInfo && typeof project.technicalInfo === 'object' ? project.technicalInfo : {};
+    const gallery = project.gallery && project.gallery.length > 0 ? project.gallery : [project.thumbnail];
 
     return (
         <div>
@@ -42,45 +48,59 @@ const ProjectDetail = () => {
                     <div style={styles.info}>
                         <h2>Thông tin dự án</h2>
                         <p>{project.description}</p>
-                        
-                        <h3 style={{marginTop: '24px'}}>Thông số kỹ thuật</h3>
-                        <table style={styles.specsTable}>
-                            <tbody>
-                                {Object.entries(project.technicalInfo).map(([key, value]) => (
-                                    <tr key={key}>
-                                        <th style={styles.specsTh}>{key}</th>
-                                        <td style={styles.specsTd}>{value}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+
+                        {Object.keys(technicalInfo).length > 0 && (
+                            <>
+                                <h3 style={{ marginTop: '24px' }}>Thông số kỹ thuật</h3>
+                                <table style={styles.specsTable}>
+                                    <tbody>
+                                        {Object.entries(technicalInfo).map(([key, value]) => (
+                                            <tr key={key}>
+                                                <th style={styles.specsTh}>{key}</th>
+                                                <td style={styles.specsTd}>{String(value)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
                     </div>
 
                     <div style={styles.gallery}>
                         <h2>Hình ảnh dự án</h2>
+                        <p style={styles.galleryHint}>Bấm vào ảnh để xem kích thước đầy đủ</p>
                         <div style={styles.galleryGrid}>
-                            {project.gallery.map((img, index) => (
-                                <img key={index} src={img} alt={`Hình ${index + 1}`} style={styles.galleryImg} />
+                            {gallery.map((img, index) => (
+                                <img
+                                    key={index}
+                                    src={img}
+                                    alt={`Hình ${index + 1}`}
+                                    style={styles.galleryImg}
+                                    onClick={() => setLightboxImage(img)}
+                                />
                             ))}
                         </div>
                     </div>
 
-                    <div style={styles.documents}>
-                        <h2>Tài liệu dự án</h2>
-                        <ul style={styles.docList}>
-                            {project.documents.map((doc, index) => (
-                                <li key={index} style={styles.docItem}>
-                                    <FiDownload />
-                                    <a href="#" style={styles.docLink}>{doc}</a>
-                                </li>
-                            ))}
-                        </ul>
-                        <button className="btn btn-primary" style={styles.zipBtn}>
-                            📦 Tải tất cả tài liệu (ZIP)
-                        </button>
-                    </div>
+                    {project.documents && project.documents.length > 0 && (
+                        <div style={styles.documents}>
+                            <h2>Tài liệu dự án</h2>
+                            <ul style={styles.docList}>
+                                {project.documents.map((doc) => (
+                                    <li key={doc._id} style={styles.docItem}>
+                                        <FiDownload />
+                                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.docLink}>
+                                            {doc.name}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                 </div>
             </section>
+
+            <ImageLightbox src={lightboxImage} alt={project.name} onClose={() => setLightboxImage(null)} />
         </div>
     );
 };
@@ -122,6 +142,11 @@ const styles = {
     gallery: {
         marginTop: '48px'
     },
+    galleryHint: {
+        fontSize: '13px',
+        color: '#999',
+        marginTop: '4px'
+    },
     galleryGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -130,8 +155,11 @@ const styles = {
     },
     galleryImg: {
         width: '100%',
+        aspectRatio: '4 / 3',
+        objectFit: 'cover',
         borderRadius: '8px',
-        boxShadow: 'var(--shadow)'
+        boxShadow: 'var(--shadow)',
+        cursor: 'zoom-in'
     },
     documents: {
         marginTop: '48px'
@@ -150,9 +178,6 @@ const styles = {
     docLink: {
         color: 'var(--primary-color)',
         textDecoration: 'none'
-    },
-    zipBtn: {
-        marginTop: '24px'
     }
 };
 
