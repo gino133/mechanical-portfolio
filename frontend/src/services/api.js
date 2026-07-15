@@ -115,6 +115,9 @@ export const projectAPI = {
         const query = queryParams.toString();
         return api.get(`/projects${query ? `?${query}` : ''}`);
     },
+
+    // Get featured projects (for homepage)
+    getFeatured: () => api.get('/projects/featured'),
     
     // Get single project by ID
     getById: (id) => api.get(`/projects/${id}`),
