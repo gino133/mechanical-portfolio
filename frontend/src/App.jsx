@@ -24,6 +24,7 @@ import PagesManager from './pages/Admin/PagesManager';
 import ProductsManager from './pages/Admin/ProductsManager';
 import ProjectsManager from './pages/Admin/ProjectsManager';
 import DocumentsManager from './pages/Admin/DocumentsManager';
+import CategoriesManager from './pages/Admin/CategoriesManager';
 import MessagesManager from './pages/Admin/MessagesManager';
 
 // Protected route wrapper
@@ -102,6 +103,7 @@ function App() {
                                 <Route path="settings" element={<Settings />} />
                                 <Route path="menu" element={<MenuManager />} />
                                 <Route path="pages" element={<PagesManager />} />
+                                <Route path="categories" element={<CategoriesManager />} />
                                 <Route path="products" element={<ProductsManager />} />
                                 <Route path="projects" element={<ProjectsManager />} />
                                 <Route path="documents" element={<DocumentsManager />} />
