@@ -1,28 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { categoryAPI } from '../../services/api';
+
+const emptyForm = {
+    name: '',
+    code: '',
+    category: '',
+    description: '',
+    thumbnail: '',
+    imagesText: '',
+    isFeatured: false
+};
 
 const ProductsManager = () => {
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        code: '',
-        description: '',
-        thumbnail: '',
-        isFeatured: false
-    });
+    const [formData, setFormData] = useState(emptyForm);
 
     const token = localStorage.getItem('token');
 
     useEffect(() => {
         fetchProducts();
+        fetchCategories();
     }, []);
 
     const fetchProducts = async () => {
         try {
-            const response = await api.get('/products');
+            const response = await api.get('/products', { params: { limit: 200 } });
             setProducts(response.data.data);
         } catch (error) {
             console.error('Lỗi tải sản phẩm:', error);
@@ -31,26 +38,76 @@ const ProductsManager = () => {
         }
     };
 
+    const fetchCategories = async () => {
+        try {
+            const response = await categoryAPI.getByType('product');
+            setCategories(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải danh mục:', error);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!formData.category) {
+            alert('Vui lòng chọn danh mục cho sản phẩm. Nếu chưa có danh mục nào, vào mục "Danh mục" ở sidebar để tạo trước.');
+            return;
+        }
+
+        const images = formData.imagesText
+            .split('\n')
+            .map((url) => url.trim())
+            .filter(Boolean);
+
+        if (images.length === 0) {
+            alert('Vui lòng nhập ít nhất 1 URL ảnh sản phẩm.');
+            return;
+        }
+
+        const payload = {
+            name: formData.name,
+            code: formData.code,
+            category: formData.category,
+            description: formData.description,
+            thumbnail: formData.thumbnail || images[0],
+            images,
+            isFeatured: formData.isFeatured
+        };
+
         try {
             if (editingProduct) {
-                await api.put(`/products/${editingProduct._id}`, formData, {
+                await api.put(`/products/${editingProduct._id}`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             } else {
-                await api.post('/products', formData, {
+                await api.post('/products', payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
             fetchProducts();
             setShowForm(false);
             setEditingProduct(null);
-            setFormData({ name: '', code: '', description: '', thumbnail: '', isFeatured: false });
+            setFormData(emptyForm);
         } catch (error) {
             console.error('Lỗi lưu sản phẩm:', error);
-            alert('Có lỗi xảy ra');
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
         }
+    };
+
+    const openEditForm = (product) => {
+        setEditingProduct(product);
+        setFormData({
+            name: product.name,
+            code: product.code,
+            // product.category comes back populated as {_id, name, slug} - the
+            // <select> needs just the id string.
+            category: product.category?._id || product.category || '',
+            description: product.description,
+            thumbnail: product.thumbnail,
+            imagesText: (product.images || []).join('\n'),
+            isFeatured: product.isFeatured
+        });
+        setShowForm(true);
     };
 
     const handleDelete = async (id) => {
@@ -72,10 +129,16 @@ const ProductsManager = () => {
         <div>
             <div style={styles.header}>
                 <h2>Quản lý sản phẩm</h2>
-                <button onClick={() => setShowForm(true)} style={styles.addBtn}>
+                <button onClick={() => { setEditingProduct(null); setFormData(emptyForm); setShowForm(true); }} style={styles.addBtn}>
                     + Thêm sản phẩm
                 </button>
             </div>
+
+            {categories.length === 0 && (
+                <div style={styles.warning}>
+                    ⚠️ Chưa có danh mục sản phẩm nào. Vào mục <strong>"Danh mục"</strong> ở sidebar để tạo ít nhất 1 danh mục trước khi thêm sản phẩm.
+                </div>
+            )}
 
             {showForm && (
                 <div style={styles.modal}>
@@ -86,7 +149,7 @@ const ProductsManager = () => {
                                 type="text"
                                 placeholder="Tên sản phẩm"
                                 value={formData.name}
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 required
                                 style={styles.input}
                             />
@@ -94,29 +157,47 @@ const ProductsManager = () => {
                                 type="text"
                                 placeholder="Mã sản phẩm"
                                 value={formData.code}
-                                onChange={(e) => setFormData({...formData, code: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                                 required
                                 style={styles.input}
                             />
+                            <select
+                                value={formData.category}
+                                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                required
+                                style={styles.input}
+                            >
+                                <option value="">-- Chọn danh mục --</option>
+                                {categories.map((cat) => (
+                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                ))}
+                            </select>
                             <textarea
                                 placeholder="Mô tả"
                                 value={formData.description}
-                                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 required
                                 style={styles.textarea}
                             />
+                            <textarea
+                                placeholder="URL các ảnh sản phẩm - mỗi dòng 1 link (ảnh đầu tiên sẽ là ảnh chính)"
+                                value={formData.imagesText}
+                                onChange={(e) => setFormData({ ...formData, imagesText: e.target.value })}
+                                required
+                                style={{ ...styles.textarea, minHeight: '100px' }}
+                            />
                             <input
                                 type="text"
-                                placeholder="URL ảnh thumbnail"
+                                placeholder="URL ảnh thumbnail (để trống sẽ tự dùng ảnh đầu tiên ở trên)"
                                 value={formData.thumbnail}
-                                onChange={(e) => setFormData({...formData, thumbnail: e.target.value})}
+                                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
                                 style={styles.input}
                             />
                             <label style={styles.checkbox}>
                                 <input
                                     type="checkbox"
                                     checked={formData.isFeatured}
-                                    onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                                    onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
                                 />
                                 Sản phẩm nổi bật
                             </label>
@@ -137,6 +218,7 @@ const ProductsManager = () => {
                     <tr>
                         <th>Tên</th>
                         <th>Mã</th>
+                        <th>Danh mục</th>
                         <th>Nổi bật</th>
                         <th>Thao tác</th>
                     </tr>
@@ -146,13 +228,10 @@ const ProductsManager = () => {
                         <tr key={product._id}>
                             <td>{product.name}</td>
                             <td>{product.code}</td>
+                            <td>{product.category?.name || '—'}</td>
                             <td>{product.isFeatured ? '✅' : '❌'}</td>
                             <td>
-                                <button onClick={() => {
-                                    setEditingProduct(product);
-                                    setFormData(product);
-                                    setShowForm(true);
-                                }} style={styles.editBtn}>Sửa</button>
+                                <button onClick={() => openEditForm(product)} style={styles.editBtn}>Sửa</button>
                                 <button onClick={() => handleDelete(product._id)} style={styles.deleteBtn}>Xóa</button>
                             </td>
                         </tr>
@@ -177,6 +256,13 @@ const styles = {
         padding: '10px 20px',
         borderRadius: '6px',
         cursor: 'pointer'
+    },
+    warning: {
+        background: '#fff3cd',
+        color: '#856404',
+        padding: '12px 16px',
+        borderRadius: '6px',
+        marginBottom: '16px'
     },
     table: {
         width: '100%',
@@ -220,48 +306,12 @@ const styles = {
         width: '500px',
         maxWidth: '90%'
     },
-    input: {
-        width: '100%',
-        padding: '10px',
-        marginBottom: '16px',
-        border: '1px solid #ddd',
-        borderRadius: '6px'
-    },
-    textarea: {
-        width: '100%',
-        padding: '10px',
-        marginBottom: '16px',
-        border: '1px solid #ddd',
-        borderRadius: '6px',
-        minHeight: '100px'
-    },
-    checkbox: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '16px'
-    },
-    modalButtons: {
-        display: 'flex',
-        gap: '12px',
-        justifyContent: 'flex-end'
-    },
-    saveBtn: {
-        background: '#28a745',
-        color: 'white',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '6px',
-        cursor: 'pointer'
-    },
-    cancelBtn: {
-        background: '#6c757d',
-        color: 'white',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '6px',
-        cursor: 'pointer'
-    }
+    input: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px' },
+    textarea: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px', minHeight: '80px' },
+    checkbox: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' },
+    modalButtons: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
+    saveBtn: { background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' },
+    cancelBtn: { background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }
 };
 
 export default ProductsManager;
