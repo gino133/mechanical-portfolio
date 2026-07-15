@@ -3,6 +3,7 @@ const router = express.Router();
 const { protect, admin } = require('../middleware/authMiddleware');
 const {
     getProjects,
+    getFeaturedProjects,
     getProjectById,
     createProject,
     updateProject,
@@ -12,6 +13,9 @@ const {
 router.route('/')
     .get(getProjects)
     .post(protect, admin, createProject);
+
+// Must be registered before '/:id' or Express would treat "featured" as an id
+router.get('/featured', getFeaturedProjects);
 
 router.route('/:id')
     .get(getProjectById)
