@@ -136,6 +136,47 @@ body {
     to { transform: rotate(360deg); }
 }
 
+/* Home page "Giới thiệu" (Intro) section - was hardcoded inline grid before,
+   which never adapted to mobile and squished into unreadable narrow
+   columns. Now driven by these classes so the media queries below apply. */
+.intro-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+    align-items: center;
+}
+
+.intro-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.intro-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    text-align: center;
+    padding-top: 48px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* About page (Giới thiệu chi tiết): avatar + bio text */
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 48px;
+    align-items: start;
+}
+
+.about-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .grid-4 { grid-template-columns: repeat(3, 1fr); }
@@ -143,6 +184,15 @@ body {
 }
 
 @media (max-width: 768px) {
-    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    /* Products/Projects/Featured sections: 2 columns on mobile instead of
+       collapsing to 1, so listings stay scannable on a phone. */
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .container { padding: 0 16px; }
+
+    /* Stack text + card sections into rows instead of squished columns */
+    .intro-grid { grid-template-columns: 1fr; gap: 32px; }
+    .intro-cards { grid-template-columns: 1fr; gap: 16px; }
+    .intro-stats { grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 32px; }
+    .about-grid { grid-template-columns: 1fr; gap: 24px; }
+    .about-info-grid { grid-template-columns: 1fr; }
 }
