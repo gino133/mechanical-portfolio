@@ -43,6 +43,10 @@ const projectSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isFeatured: {
+        type: Boolean,
+        default: false
+    },
     completionDate: {
         type: Date
     },
