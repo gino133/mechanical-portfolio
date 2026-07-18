@@ -177,6 +177,13 @@ body {
     margin-top: 24px;
 }
 
+/* Contact page: info column + form column */
+.contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .grid-4 { grid-template-columns: repeat(3, 1fr); }
@@ -195,6 +202,7 @@ body {
     .intro-stats { grid-template-columns: repeat(3, 1fr); gap: 12px; padding-top: 32px; }
     .about-grid { grid-template-columns: 1fr; gap: 24px; }
     .about-info-grid { grid-template-columns: 1fr; }
+    .contact-grid { grid-template-columns: 1fr; gap: 32px; }
 }
 
 /* Blog article content - renders HTML produced by the rich text editor
