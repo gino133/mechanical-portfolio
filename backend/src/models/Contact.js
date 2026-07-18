@@ -8,15 +8,21 @@ const contactSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: [true, 'Please add email'],
+        required: false,
         lowercase: true,
-        match: [
-            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-            'Please add a valid email'
-        ]
+        trim: true,
+        // Only validate format when an email is actually provided - this
+        // field is now optional (phone is the required contact method).
+        validate: {
+            validator: function (value) {
+                return !value || /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value);
+            },
+            message: 'Please add a valid email'
+        }
     },
     phone: {
         type: String,
+        required: [true, 'Please add phone number'],
         trim: true
     },
     company: {
