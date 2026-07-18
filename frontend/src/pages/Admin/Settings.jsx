@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
 import ImageField from '../../components/common/ImageField';
+import RichTextEditor from '../../components/common/RichTextEditor';
 
 const Settings = () => {
     const { settings, updateSettings, loading } = useSettings();
@@ -282,12 +283,22 @@ const Settings = () => {
 
                     <div style={styles.formGroup}>
                         <label>Đoạn giới thiệu 1</label>
-                        <textarea name="aboutIntro1" value={form.aboutIntro1 || ''} onChange={handleChange} style={styles.textarea} rows="4" />
+                        <RichTextEditor
+                            value={form.aboutIntro1 || ''}
+                            onChange={(html) => setForm({ ...form, aboutIntro1: html })}
+                            placeholder="Viết đoạn giới thiệu đầu tiên..."
+                            minHeight="140px"
+                        />
                     </div>
 
-                    <div style={styles.formGroup}>
+                    <div style={{ ...styles.formGroup, marginTop: '16px' }}>
                         <label>Đoạn giới thiệu 2</label>
-                        <textarea name="aboutIntro2" value={form.aboutIntro2 || ''} onChange={handleChange} style={styles.textarea} rows="4" />
+                        <RichTextEditor
+                            value={form.aboutIntro2 || ''}
+                            onChange={(html) => setForm({ ...form, aboutIntro2: html })}
+                            placeholder="Viết đoạn giới thiệu thứ hai..."
+                            minHeight="140px"
+                        />
                     </div>
 
                     <div style={styles.formGroup}>

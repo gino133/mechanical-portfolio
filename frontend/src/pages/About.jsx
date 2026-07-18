@@ -34,12 +34,16 @@ const About = () => {
                         </div>
                         <div>
                             <h2 style={styles.sectionTitle}>Hồ sơ cá nhân</h2>
-                            <p style={styles.text}>
-                                {settings.aboutIntro1}
-                            </p>
-                            <p style={styles.text}>
-                                {settings.aboutIntro2}
-                            </p>
+                            <div
+                                className="blog-content"
+                                onClick={(e) => { if (e.target.tagName === 'IMG') setLightboxImage(e.target.src); }}
+                                dangerouslySetInnerHTML={{ __html: settings.aboutIntro1 }}
+                            />
+                            <div
+                                className="blog-content"
+                                onClick={(e) => { if (e.target.tagName === 'IMG') setLightboxImage(e.target.src); }}
+                                dangerouslySetInnerHTML={{ __html: settings.aboutIntro2 }}
+                            />
 
                             <div className="about-info-grid">
                                 <div><strong>📧 Email:</strong> {settings.email}</div>

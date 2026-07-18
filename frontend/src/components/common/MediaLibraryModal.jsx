@@ -46,7 +46,8 @@ const MediaLibraryModal = ({ onSelect, onClose }) => {
             onSelect(uploaded.url);
         } catch (error) {
             console.error('Lỗi upload ảnh:', error);
-            alert('Upload thất bại, thử lại sau.');
+            const serverMessage = error.response?.data?.message;
+            alert(serverMessage ? `Upload thất bại: ${serverMessage}` : 'Upload thất bại, thử lại sau. Kiểm tra Console (F12) để xem chi tiết lỗi.');
         } finally {
             setUploading(false);
         }
