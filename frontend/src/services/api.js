@@ -202,6 +202,25 @@ export const settingsAPI = {
     update: (data) => api.put('/settings', data),
 };
 
+// ==================== MEDIA LIBRARY API ====================
+export const mediaAPI = {
+    // List previously uploaded images (most recent first)
+    getAll: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+        const query = queryParams.toString();
+        return api.get(`/media${query ? `?${query}` : ''}`);
+    },
+
+    // Upload a new image file (FormData with a single "image" field)
+    upload: (formData) => api.post('/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+
+    delete: (id) => api.delete(`/media/${id}`),
+};
+
 // ==================== SEARCH API ====================
 export const searchAPI = {
     // Search across products, projects, documents

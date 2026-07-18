@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { FiPlus, FiTrash2 } from 'react-icons/fi';
+import ImageField from '../../components/common/ImageField';
 
 const Settings = () => {
     const { settings, updateSettings, loading } = useSettings();
@@ -134,8 +135,11 @@ const Settings = () => {
                     </div>
 
                     <div style={styles.formGroup}>
-                        <label>Logo URL (ảnh)</label>
-                        <input type="text" name="logoImage" value={form.logoImage || ''} onChange={handleChange} style={styles.input} placeholder="https://..." />
+                        <ImageField
+                            label="Logo (ảnh)"
+                            value={form.logoImage || ''}
+                            onChange={(url) => setForm({ ...form, logoImage: url })}
+                        />
                     </div>
 
                     <div style={styles.formGroup}>
@@ -228,8 +232,11 @@ const Settings = () => {
                     </div>
 
                     <div style={styles.formGroup}>
-                        <label>URL ảnh nền Hero</label>
-                        <input type="text" name="heroImage" value={form.heroImage || ''} onChange={handleChange} style={styles.input} placeholder="https://..." />
+                        <ImageField
+                            label="Ảnh nền Hero"
+                            value={form.heroImage || ''}
+                            onChange={(url) => setForm({ ...form, heroImage: url })}
+                        />
                     </div>
 
                     <h3>Phần "Giới thiệu" trên trang chủ</h3>
@@ -266,8 +273,11 @@ const Settings = () => {
                     <h3>Trang "Giới thiệu"</h3>
 
                     <div style={styles.formGroup}>
-                        <label>Ảnh đại diện (URL)</label>
-                        <input type="text" name="avatarImage" value={form.avatarImage || ''} onChange={handleChange} style={styles.input} placeholder="https://..." />
+                        <ImageField
+                            label="Ảnh đại diện"
+                            value={form.avatarImage || ''}
+                            onChange={(url) => setForm({ ...form, avatarImage: url })}
+                        />
                     </div>
 
                     <div style={styles.formGroup}>

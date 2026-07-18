@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
+import ImageField from '../../components/common/ImageField';
+import MultiImageField from '../../components/common/MultiImageField';
 
 const emptyForm = {
     name: '',
     code: '',
     category: '',
     description: '',
-    thumbnail: '',
-    imagesText: '',
+    images: [],
     isFeatured: false
 };
 
@@ -54,13 +55,8 @@ const ProductsManager = () => {
             return;
         }
 
-        const images = formData.imagesText
-            .split('\n')
-            .map((url) => url.trim())
-            .filter(Boolean);
-
-        if (images.length === 0) {
-            alert('Vui lòng nhập ít nhất 1 URL ảnh sản phẩm.');
+        if (formData.images.length === 0) {
+            alert('Vui lòng thêm ít nhất 1 ảnh sản phẩm.');
             return;
         }
 
@@ -69,8 +65,8 @@ const ProductsManager = () => {
             code: formData.code,
             category: formData.category,
             description: formData.description,
-            thumbnail: formData.thumbnail || images[0],
-            images,
+            thumbnail: formData.images[0],
+            images: formData.images,
             isFeatured: formData.isFeatured
         };
 
@@ -103,8 +99,7 @@ const ProductsManager = () => {
             // <select> needs just the id string.
             category: product.category?._id || product.category || '',
             description: product.description,
-            thumbnail: product.thumbnail,
-            imagesText: (product.images || []).join('\n'),
+            images: product.images || [],
             isFeatured: product.isFeatured
         });
         setShowForm(true);
@@ -179,19 +174,10 @@ const ProductsManager = () => {
                                 required
                                 style={styles.textarea}
                             />
-                            <textarea
-                                placeholder="URL các ảnh sản phẩm - mỗi dòng 1 link (ảnh đầu tiên sẽ là ảnh chính)"
-                                value={formData.imagesText}
-                                onChange={(e) => setFormData({ ...formData, imagesText: e.target.value })}
-                                required
-                                style={{ ...styles.textarea, minHeight: '100px' }}
-                            />
-                            <input
-                                type="text"
-                                placeholder="URL ảnh thumbnail (để trống sẽ tự dùng ảnh đầu tiên ở trên)"
-                                value={formData.thumbnail}
-                                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                                style={styles.input}
+                            <MultiImageField
+                                label="Hình ảnh sản phẩm"
+                                value={formData.images}
+                                onChange={(images) => setFormData({ ...formData, images })}
                             />
                             <label style={styles.checkbox}>
                                 <input

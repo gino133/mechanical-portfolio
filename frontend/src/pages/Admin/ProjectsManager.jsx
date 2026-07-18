@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
+import MultiImageField from '../../components/common/MultiImageField';
 
 const emptyForm = {
     name: '',
@@ -8,8 +9,7 @@ const emptyForm = {
     category: '',
     year: new Date().getFullYear(),
     description: '',
-    thumbnail: '',
-    galleryText: '',
+    gallery: [],
     technicalInfo: {},
     isFeatured: false
 };
@@ -56,10 +56,10 @@ const ProjectsManager = () => {
             return;
         }
 
-        const gallery = formData.galleryText
-            .split('\n')
-            .map((url) => url.trim())
-            .filter(Boolean);
+        if (formData.gallery.length === 0) {
+            alert('Vui lòng thêm ít nhất 1 ảnh cho dự án.');
+            return;
+        }
 
         const payload = {
             name: formData.name,
@@ -67,8 +67,8 @@ const ProjectsManager = () => {
             category: formData.category,
             year: formData.year,
             description: formData.description,
-            thumbnail: formData.thumbnail || gallery[0] || '',
-            gallery,
+            thumbnail: formData.gallery[0],
+            gallery: formData.gallery,
             technicalInfo: formData.technicalInfo,
             isFeatured: formData.isFeatured
         };
@@ -101,8 +101,7 @@ const ProjectsManager = () => {
             category: project.category?._id || project.category || '',
             year: project.year,
             description: project.description,
-            thumbnail: project.thumbnail,
-            galleryText: (project.gallery || []).join('\n'),
+            gallery: project.gallery || [],
             technicalInfo: project.technicalInfo || {},
             isFeatured: project.isFeatured || false
         });
@@ -187,18 +186,10 @@ const ProjectsManager = () => {
                                 style={styles.textarea}
                                 rows="4"
                             />
-                            <input
-                                type="text"
-                                placeholder="URL ảnh thumbnail (để trống sẽ tự dùng ảnh đầu tiên trong gallery bên dưới)"
-                                value={formData.thumbnail}
-                                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                                style={styles.input}
-                            />
-                            <textarea
-                                placeholder="URL ảnh gallery dự án - mỗi dòng 1 link"
-                                value={formData.galleryText}
-                                onChange={(e) => setFormData({ ...formData, galleryText: e.target.value })}
-                                style={{ ...styles.textarea, minHeight: '100px' }}
+                            <MultiImageField
+                                label="Hình ảnh dự án (ảnh đầu tiên dùng làm thumbnail)"
+                                value={formData.gallery}
+                                onChange={(gallery) => setFormData({ ...formData, gallery })}
                             />
                             <label style={styles.checkbox}>
                                 <input
