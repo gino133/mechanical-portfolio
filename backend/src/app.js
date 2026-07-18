@@ -36,6 +36,17 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
+app.get('/', (req, res) => {
+    res.send(`
+        <h1>🚀 Mechanical Portfolio API</h1>
+        <p>Status: Running</p>
+        <ul>
+            <li><a href="/health">Health Check</a></li>
+            <li><a href="/api/v1">API Base</a></li>
+        </ul>
+    `);
+});
+
 // 404 handler
 app.all('*', (req, res) => {
     res.status(404).json({
