@@ -56,7 +56,7 @@ const Contact = () => {
 
             <section style={styles.section}>
                 <div className="container">
-                    <div style={styles.grid}>
+                    <div className="contact-grid">
                         <div>
                             <h2>Thông tin liên hệ</h2>
                             <div style={styles.infoList}>
@@ -104,11 +104,10 @@ const Contact = () => {
                                 </div>
 
                                 <div style={styles.formGroup}>
-                                    <label>Email *</label>
+                                    <label>Email</label>
                                     <input
                                         type="email"
                                         name="email"
-                                        required
                                         value={formData.email}
                                         onChange={handleChange}
                                         style={styles.input}
@@ -116,10 +115,11 @@ const Contact = () => {
                                 </div>
 
                                 <div style={styles.formGroup}>
-                                    <label>Số điện thoại</label>
+                                    <label>Số điện thoại *</label>
                                     <input
                                         type="tel"
                                         name="phone"
+                                        required
                                         value={formData.phone}
                                         onChange={handleChange}
                                         style={styles.input}
