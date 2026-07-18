@@ -12,7 +12,7 @@ const Footer = () => {
                 <div style={styles.grid}>
                     {/* About */}
                     <div>
-                        <h3 style={styles.title}>Về tôi</h3>
+                        <h3 style={styles.title}>{settings.footerAboutTitle}</h3>
                         <p style={styles.text}>
                             {settings.footerAboutText}
                         </p>
@@ -20,7 +20,7 @@ const Footer = () => {
 
                     {/* Quick Links */}
                     <div>
-                        <h3 style={styles.title}>Liên kết nhanh</h3>
+                        <h3 style={styles.title}>{settings.footerLinksTitle}</h3>
                         <ul style={styles.linkList}>
                             {(settings.footerLinks || []).map((item, index) => (
                                 <li key={index}><Link to={item.path} style={styles.link}>{item.label}</Link></li>
@@ -30,7 +30,7 @@ const Footer = () => {
 
                     {/* Contact */}
                     <div>
-                        <h3 style={styles.title}>Thông tin liên hệ</h3>
+                        <h3 style={styles.title}>{settings.footerContactTitle}</h3>
                         <ul style={styles.contactList}>
                             <li><FiMail /> <a href={`mailto:${settings.email}`} style={styles.link}>{settings.email}</a></li>
                             <li><FiPhone /> <a href={`tel:${settings.phone}`} style={styles.link}>{settings.phone}</a></li>

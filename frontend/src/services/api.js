@@ -221,6 +221,31 @@ export const mediaAPI = {
     delete: (id) => api.delete(`/media/${id}`),
 };
 
+// ==================== BLOG API ====================
+export const blogAPI = {
+    // Public: published posts only
+    getAll: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.page) queryParams.append('page', params.page);
+        if (params.limit) queryParams.append('limit', params.limit);
+        if (params.category) queryParams.append('category', params.category);
+        if (params.search) queryParams.append('search', params.search);
+        const query = queryParams.toString();
+        return api.get(`/blog${query ? `?${query}` : ''}`);
+    },
+
+    // Admin: all posts including drafts
+    getAllAdmin: () => api.get('/blog/admin'),
+
+    getBySlug: (slugOrId) => api.get(`/blog/${slugOrId}`),
+
+    create: (data) => api.post('/blog', data),
+
+    update: (id, data) => api.put(`/blog/${id}`, data),
+
+    delete: (id) => api.delete(`/blog/${id}`),
+};
+
 // ==================== SEARCH API ====================
 export const searchAPI = {
     // Search across products, projects, documents

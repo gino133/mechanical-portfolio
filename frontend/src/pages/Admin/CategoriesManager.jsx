@@ -5,7 +5,8 @@ import { FiTrash2, FiEdit2 } from 'react-icons/fi';
 const TYPE_LABELS = {
     product: 'Sản phẩm',
     project: 'Dự án',
-    document: 'Tài liệu'
+    document: 'Tài liệu',
+    blog: 'Blog'
 };
 
 const slugify = (text) =>

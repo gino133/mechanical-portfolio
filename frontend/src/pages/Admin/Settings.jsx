@@ -409,10 +409,25 @@ const Settings = () => {
             {activeTab === 'footer' && (
                 <div style={styles.tabContent}>
                     <h3>Footer (chân trang)</h3>
+                    <p style={styles.hint}>Footer có 3 cột: Giới thiệu ngắn, Liên kết nhanh, Thông tin liên hệ. Bạn có thể đổi tiêu đề từng cột và nội dung bên dưới.</p>
 
+                    <div style={styles.formGroup}>
+                        <label>Tiêu đề cột 1</label>
+                        <input type="text" name="footerAboutTitle" value={form.footerAboutTitle || ''} onChange={handleChange} style={styles.input} />
+                    </div>
                     <div style={styles.formGroup}>
                         <label>Đoạn giới thiệu ngắn ở footer</label>
                         <textarea name="footerAboutText" value={form.footerAboutText || ''} onChange={handleChange} style={styles.textarea} rows="3" />
+                    </div>
+
+                    <div style={styles.formGroup}>
+                        <label>Tiêu đề cột 2 (danh sách liên kết nhanh)</label>
+                        <input type="text" name="footerLinksTitle" value={form.footerLinksTitle || ''} onChange={handleChange} style={styles.input} />
+                    </div>
+
+                    <div style={styles.formGroup}>
+                        <label>Tiêu đề cột 3 (thông tin liên hệ)</label>
+                        <input type="text" name="footerContactTitle" value={form.footerContactTitle || ''} onChange={handleChange} style={styles.input} />
                     </div>
 
                     <div style={styles.formGroup}>

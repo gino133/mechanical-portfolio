@@ -104,10 +104,13 @@ const settingsSchema = new mongoose.Schema({
     workingHours: { type: String, default: 'Thứ 2 - Thứ 7: 8:00 - 17:30' },
 
     // Footer
+    footerAboutTitle: { type: String, default: 'Về tôi' },
     footerAboutText: {
         type: String,
         default: 'Kỹ sư Cơ khí & Điện với 10+ năm kinh nghiệm trong lĩnh vực chế tạo máy và tự động hóa.'
     },
+    footerLinksTitle: { type: String, default: 'Liên kết nhanh' },
+    footerContactTitle: { type: String, default: 'Thông tin liên hệ' },
     copyrightText: { type: String, default: '© 2026 Nguyễn Văn A. All rights reserved.' },
     footerLinks: { type: [footerLinkSchema], default: [
         { label: 'Sản phẩm', path: '/products' },

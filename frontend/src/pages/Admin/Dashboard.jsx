@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { FiPackage, FiFolder, FiFileText, FiLogOut, FiSettings, FiMenu, FiMail, FiTag } from 'react-icons/fi';
+import { FiPackage, FiFolder, FiFileText, FiLogOut, FiSettings, FiMenu, FiMail, FiTag, FiEdit3 } from 'react-icons/fi';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -30,6 +30,7 @@ const AdminDashboard = () => {
     	{ path: '/admin/products', icon: <FiPackage />, label: 'Sản phẩm' },
     	{ path: '/admin/projects', icon: <FiFolder />, label: 'Dự án' },
     	{ path: '/admin/documents', icon: <FiFileText />, label: 'Tài liệu' },
+    	{ path: '/admin/blog', icon: <FiEdit3 />, label: 'Blog' },
     	{ path: '/admin/messages', icon: <FiMail />, label: 'Tin nhắn' },
     ];
 

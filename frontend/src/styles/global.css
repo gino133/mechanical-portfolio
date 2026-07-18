@@ -196,3 +196,43 @@ body {
     .about-grid { grid-template-columns: 1fr; gap: 24px; }
     .about-info-grid { grid-template-columns: 1fr; }
 }
+
+/* Blog article content - renders HTML produced by the rich text editor
+   (RichTextEditor.jsx / Quill). These class names must match the Quill
+   "size" and "font" whitelists registered there. Bold/italic/underline/
+   color/background/links are plain HTML/inline styles and need no extra
+   CSS here. */
+.blog-content h1 { font-size: 30px; margin: 24px 0 12px; color: var(--primary-color); }
+.blog-content h2 { font-size: 24px; margin: 20px 0 10px; color: var(--primary-color); }
+.blog-content h3 { font-size: 20px; margin: 16px 0 8px; color: var(--primary-color); }
+.blog-content p { margin-bottom: 14px; }
+.blog-content img { max-width: 100%; border-radius: 8px; cursor: zoom-in; margin: 8px 0; }
+.blog-content a { color: var(--accent-color); text-decoration: underline; }
+.blog-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    background: var(--bg-light);
+    padding: 12px 20px;
+    margin: 16px 0;
+    color: var(--text-light);
+    font-style: italic;
+}
+.blog-content ul, .blog-content ol { margin: 0 0 14px 24px; }
+.blog-content .ql-align-center { text-align: center; }
+.blog-content .ql-align-right { text-align: right; }
+.blog-content .ql-align-justify { text-align: justify; }
+.blog-content .ql-indent-1 { padding-left: 24px; }
+.blog-content .ql-indent-2 { padding-left: 48px; }
+.blog-content .ql-indent-3 { padding-left: 72px; }
+.blog-content .ql-font-serif { font-family: Georgia, 'Times New Roman', serif; }
+.blog-content .ql-font-monospace { font-family: 'Courier New', monospace; }
+.blog-content .ql-font-roboto { font-family: Roboto, sans-serif; }
+.blog-content .ql-font-georgia { font-family: Georgia, serif; }
+.blog-content .ql-size-12px { font-size: 12px; }
+.blog-content .ql-size-14px { font-size: 14px; }
+.blog-content .ql-size-16px { font-size: 16px; }
+.blog-content .ql-size-18px { font-size: 18px; }
+.blog-content .ql-size-20px { font-size: 20px; }
+.blog-content .ql-size-24px { font-size: 24px; }
+.blog-content .ql-size-28px { font-size: 28px; }
+.blog-content .ql-size-32px { font-size: 32px; }
+.blog-content .ql-size-40px { font-size: 40px; }

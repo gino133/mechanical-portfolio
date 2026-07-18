@@ -69,7 +69,10 @@ const DEFAULT_SETTINGS = {
     cvUrlEn: '',
 
     // Footer
+    footerAboutTitle: 'Về tôi',
     footerAboutText: '',
+    footerLinksTitle: 'Liên kết nhanh',
+    footerContactTitle: 'Thông tin liên hệ',
     copyrightText: '© 2026 Nguyễn Văn A. All rights reserved.',
     footerLinks: [
         { label: 'Sản phẩm', path: '/products' },
