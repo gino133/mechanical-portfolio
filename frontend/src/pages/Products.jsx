@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiSearch } from 'react-icons/fi';
 import { productAPI, categoryAPI } from '../services/api';
+import { useSettings } from '../contexts/SettingsContext';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const Products = () => {
+    const { settings } = useSettings();
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,7 +49,7 @@ const Products = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.productsHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Sản phẩm</h1>
                     <p style={styles.subtitle}>Catalogue sản phẩm cơ khí & điện</p>

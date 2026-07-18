@@ -48,6 +48,12 @@ const DEFAULT_SETTINGS = {
     heroSubtitle: 'Kỹ sư Cơ khí chế tạo & Tự động hóa',
     heroDescription: 'Giải pháp kỹ thuật toàn diện cho ngành công nghiệp',
     heroImage: '',
+    aboutHeroImage: '',
+    productsHeroImage: '',
+    projectsHeroImage: '',
+    documentsHeroImage: '',
+    contactHeroImage: '',
+    blogHeroImage: '',
 
     // Intro section
     introText1: 'Tôi là kỹ sư cơ khí với hơn 10 năm kinh nghiệm...',

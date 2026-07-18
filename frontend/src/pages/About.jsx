@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { GiGraduateCap, GiTrophy } from 'react-icons/gi';
 import { useSettings } from '../contexts/SettingsContext';
 import ImageLightbox from '../components/common/ImageLightbox';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const About = () => {
     const { settings } = useSettings();
@@ -14,7 +15,7 @@ const About = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.aboutHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Giới thiệu về tôi</h1>
                     <p style={styles.subtitle}>{settings.heroSubtitle}</p>

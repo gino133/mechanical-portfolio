@@ -97,6 +97,7 @@ const Settings = () => {
         { id: 'about', label: 'Giới thiệu' },
         { id: 'contact', label: 'Thông tin liên hệ' },
         { id: 'footer', label: 'Footer' },
+        { id: 'banners', label: 'Ảnh nền các trang' },
         { id: 'chatbot', label: 'Trợ lý AI' },
         { id: 'seo', label: 'SEO' }
     ];
@@ -468,6 +469,47 @@ const Settings = () => {
                         </div>
                     ))}
                     <button onClick={addFooterLink} style={styles.addBtn} type="button"><FiPlus /> Thêm liên kết</button>
+                </div>
+            )}
+
+            {/* Tab Banners - ảnh nền cho các trang khác, giống trang chủ */}
+            {activeTab === 'banners' && (
+                <div style={styles.tabContent}>
+                    <h3>Ảnh nền banner đầu trang</h3>
+                    <p style={styles.hint}>
+                        Mặc định các trang này dùng nền màu trơn (gradient). Chọn ảnh bên dưới nếu muốn có ảnh nền phía sau tiêu đề, giống banner ở Trang chủ. Để trống sẽ giữ nguyên nền màu.
+                    </p>
+
+                    <ImageField
+                        label="Trang Giới thiệu"
+                        value={form.aboutHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, aboutHeroImage: url })}
+                    />
+                    <ImageField
+                        label="Trang Sản phẩm"
+                        value={form.productsHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, productsHeroImage: url })}
+                    />
+                    <ImageField
+                        label="Trang Dự án"
+                        value={form.projectsHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, projectsHeroImage: url })}
+                    />
+                    <ImageField
+                        label="Trang Tài liệu"
+                        value={form.documentsHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, documentsHeroImage: url })}
+                    />
+                    <ImageField
+                        label="Trang Liên hệ"
+                        value={form.contactHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, contactHeroImage: url })}
+                    />
+                    <ImageField
+                        label="Trang Blog"
+                        value={form.blogHeroImage || ''}
+                        onChange={(url) => setForm({ ...form, blogHeroImage: url })}
+                    />
                 </div>
             )}
 

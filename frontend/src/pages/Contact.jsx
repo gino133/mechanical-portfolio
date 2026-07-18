@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FiMapPin, FiPhone, FiMail, FiClock } from 'react-icons/fi';
 import { useSettings } from '../contexts/SettingsContext';
 import { contactAPI } from '../services/api';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const Contact = () => {
     const { settings } = useSettings();
@@ -46,7 +47,7 @@ const Contact = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.contactHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Liên hệ</h1>
                     <p style={styles.subtitle}>Hãy liên hệ với tôi để được tư vấn và hỗ trợ</p>

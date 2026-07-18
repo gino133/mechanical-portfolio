@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogAPI, categoryAPI } from '../services/api';
+import { useSettings } from '../contexts/SettingsContext';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const stripHtml = (html) => html.replace(/<[^>]*>/g, '').trim();
 
 const Blog = () => {
+    const { settings } = useSettings();
     const [posts, setPosts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +50,7 @@ const Blog = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.blogHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Blog</h1>
                     <p style={styles.subtitle}>Chia sẻ kiến thức, kinh nghiệm về cơ khí & điện</p>

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiSearch, FiDownload, FiEye, FiFile } from 'react-icons/fi';
 import { documentAPI, categoryAPI } from '../services/api';
+import { useSettings } from '../contexts/SettingsContext';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const UNCATEGORIZED_KEY = '__uncategorized__';
 
 const Documents = () => {
+    const { settings } = useSettings();
     const [documents, setDocuments] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,7 +85,7 @@ const Documents = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.documentsHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Thư viện tài liệu</h1>
                     <p style={styles.subtitle}>Tài liệu kỹ thuật, bản vẽ, thuyết minh dự án</p>

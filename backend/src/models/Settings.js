@@ -57,6 +57,15 @@ const settingsSchema = new mongoose.Schema({
     heroDescription: { type: String, default: 'Giải pháp kỹ thuật toàn diện cho ngành công nghiệp' },
     heroImage: { type: String, default: '' },
 
+    // Optional background image for the banner at the top of other pages
+    // (same style as the homepage Hero, just re-used per page)
+    aboutHeroImage: { type: String, default: '' },
+    productsHeroImage: { type: String, default: '' },
+    projectsHeroImage: { type: String, default: '' },
+    documentsHeroImage: { type: String, default: '' },
+    contactHeroImage: { type: String, default: '' },
+    blogHeroImage: { type: String, default: '' },
+
     // Intro section (trang chủ)
     introText1: {
         type: String,

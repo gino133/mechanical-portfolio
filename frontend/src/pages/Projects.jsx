@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { projectAPI, categoryAPI } from '../services/api';
+import { useSettings } from '../contexts/SettingsContext';
+import { heroBackgroundStyle } from '../utils/heroBackground';
 
 const Projects = () => {
+    const { settings } = useSettings();
     const [projects, setProjects] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ const Projects = () => {
 
     return (
         <div>
-            <section style={styles.hero}>
+            <section style={{ ...styles.hero, ...heroBackgroundStyle(settings.projectsHeroImage) }}>
                 <div className="container">
                     <h1 style={styles.title}>Dự án đã thực hiện</h1>
                     <p style={styles.subtitle}>Các dự án tiêu biểu trong lĩnh vực cơ khí và điện</p>
