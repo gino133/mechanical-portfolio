@@ -9,9 +9,9 @@ const Footer = () => {
     return (
         <footer style={styles.footer}>
             <div className="container" style={styles.container}>
-                <div style={styles.grid}>
+                <div className="footer-grid">
                     {/* About */}
-                    <div>
+                    <div className="footer-about">
                         <h3 style={styles.title}>{settings.footerAboutTitle}</h3>
                         <p style={styles.text}>
                             {settings.footerAboutText}
