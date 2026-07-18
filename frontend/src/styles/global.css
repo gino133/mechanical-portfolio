@@ -184,6 +184,14 @@ body {
     gap: 48px;
 }
 
+/* Footer: Về tôi / Liên kết nhanh / Thông tin liên hệ */
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 32px;
+    margin-bottom: 32px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .grid-4 { grid-template-columns: repeat(3, 1fr); }
@@ -203,6 +211,12 @@ body {
     .about-grid { grid-template-columns: 1fr; gap: 24px; }
     .about-info-grid { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+
+    /* Footer: keep "Liên kết nhanh" + "Thông tin liên hệ" side by side in
+       2 columns even on mobile, with "Về tôi" spanning full width above
+       them - instead of all 3 sections stacking into 1 column. */
+    .footer-grid { grid-template-columns: 1fr 1fr; gap: 20px 16px; }
+    .footer-about { grid-column: 1 / -1; }
 }
 
 /* Blog article content - renders HTML produced by the rich text editor
