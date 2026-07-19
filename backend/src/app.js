@@ -31,20 +31,20 @@ app.use('/api/', limiter);
 // Routes
 app.use('/api/v1', routes);
 
+// Root route - friendly response instead of a 404 when someone (or an
+// uptime pinger) hits the bare domain with no path.
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Mechanical Portfolio API is running',
+        health: '/health',
+        api: '/api/v1'
+    });
+});
+
 // Health check
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
-
-app.get('/', (req, res) => {
-    res.send(`
-        <h1>🚀 Mechanical Portfolio API</h1>
-        <p>Status: Running</p>
-        <ul>
-            <li><a href="/health">Health Check</a></li>
-            <li><a href="/api/v1">API Base</a></li>
-        </ul>
-    `);
 });
 
 // 404 handler
