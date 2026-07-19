@@ -1,3 +1,13 @@
+// MUST be required first, before express/routes are set up. This patches
+// Express so that a rejected promise inside any async route handler is
+// automatically passed to the error-handling middleware below, instead of
+// becoming an "unhandled promise rejection" - which previously triggered
+// server.js's unhandledRejection handler and killed + restarted the whole
+// process on a single bad request (causing every visitor to see the site
+// hang for 10-30+ seconds while the server rebooted and reconnected to
+// MongoDB).
+require('express-async-errors');
+
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
