@@ -246,6 +246,23 @@ export const blogAPI = {
     delete: (id) => api.delete(`/blog/${id}`),
 };
 
+// ==================== SERVICES API ====================
+export const serviceAPI = {
+    // Public: active services only, sorted for homepage display
+    getAll: () => api.get('/services'),
+
+    // Admin: all services including inactive ones
+    getAllAdmin: () => api.get('/services/admin'),
+
+    getBySlug: (slugOrId) => api.get(`/services/${slugOrId}`),
+
+    create: (data) => api.post('/services', data),
+
+    update: (id, data) => api.put(`/services/${id}`, data),
+
+    delete: (id) => api.delete(`/services/${id}`),
+};
+
 // ==================== SEARCH API ====================
 export const searchAPI = {
     // Search across products, projects, documents

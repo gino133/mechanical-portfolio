@@ -15,6 +15,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import Documents from './pages/Documents';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
+import ServiceDetail from './pages/ServiceDetail';
 import Contact from './pages/Contact';
 
 // Admin pages
@@ -28,6 +29,7 @@ import ProjectsManager from './pages/Admin/ProjectsManager';
 import DocumentsManager from './pages/Admin/DocumentsManager';
 import CategoriesManager from './pages/Admin/CategoriesManager';
 import BlogManager from './pages/Admin/BlogManager';
+import ServicesManager from './pages/Admin/ServicesManager';
 import MessagesManager from './pages/Admin/MessagesManager';
 
 // Protected route wrapper
@@ -69,6 +71,7 @@ function App() {
                             <Route path="/documents" element={<Documents />} />
                             <Route path="/blog" element={<Blog />} />
                             <Route path="/blog/:slug" element={<BlogDetail />} />
+                            <Route path="/services/:slug" element={<ServiceDetail />} />
                             <Route path="/contact" element={<Contact />} />
                             
                             {/* Admin Login - no layout */}
@@ -110,6 +113,7 @@ function App() {
                                 <Route path="pages" element={<PagesManager />} />
                                 <Route path="categories" element={<CategoriesManager />} />
                                 <Route path="blog" element={<BlogManager />} />
+                                <Route path="services" element={<ServicesManager />} />
                                 <Route path="products" element={<ProductsManager />} />
                                 <Route path="projects" element={<ProjectsManager />} />
                                 <Route path="documents" element={<DocumentsManager />} />

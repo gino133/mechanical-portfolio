@@ -10,6 +10,7 @@ const contactRoutes = require('./contactRoutes');
 const settingsRoutes = require('./settingsRoutes');
 const mediaRoutes = require('./mediaRoutes');
 const blogRoutes = require('./blogRoutes');
+const serviceRoutes = require('./serviceRoutes');
 const setupRoutes = require('./setupRoutes'); // TEMPORARY - remove after creating admin
 
 // Friendly response for the bare "/api/v1" path itself (it's just a prefix
@@ -21,7 +22,7 @@ router.get('/', (req, res) => {
         message: 'Mechanical Portfolio API v1',
         endpoints: [
             '/auth', '/products', '/projects', '/documents',
-            '/categories', '/contact', '/settings', '/media', '/blog'
+            '/categories', '/contact', '/settings', '/media', '/blog', '/services'
         ]
     });
 });
@@ -35,6 +36,7 @@ router.use('/contact', contactRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/media', mediaRoutes);
 router.use('/blog', blogRoutes);
+router.use('/services', serviceRoutes);
 router.use('/setup', setupRoutes); // TEMPORARY - remove after creating admin
 
 module.exports = router;

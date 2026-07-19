@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { GiGears, GiElectric } from 'react-icons/gi';
+import { GiGears } from 'react-icons/gi';
 import { useSettings } from '../../contexts/SettingsContext';
+import { serviceAPI } from '../../services/api';
 
 const IntroSection = () => {
     const { settings } = useSettings();
+    const [services, setServices] = useState([]);
+
+    useEffect(() => {
+        serviceAPI.getAll()
+            .then((res) => setServices(res.data.data))
+            .catch((err) => console.error('Lỗi tải dịch vụ:', err));
+    }, []);
 
     const stats = [
         { number: settings.statYears, label: settings.statYearsLabel },
@@ -25,16 +33,19 @@ const IntroSection = () => {
                     </div>
 
                     <div className="intro-cards">
-                        <div style={styles.card}>
-                            <GiGears size={48} color="var(--primary-color)" />
-                            <h3>Cơ khí chính xác</h3>
-                            <p>Thiết kế kết cấu, gia công CNC, chế tạo máy</p>
-                        </div>
-                        <div style={styles.card}>
-                            <GiElectric size={48} color="var(--primary-color)" />
-                            <h3>Điện & Tự động hóa</h3>
-                            <p>Tủ điện công nghiệp, PLC, HMI, Scada</p>
-                        </div>
+                        {services.map((service) => (
+                            <Link key={service._id} to={`/services/${service.slug}`} style={styles.cardLink}>
+                                <div style={styles.card}>
+                                    {service.icon ? (
+                                        <img src={service.icon} alt={service.title} style={styles.cardIcon} />
+                                    ) : (
+                                        <GiGears size={48} color="var(--primary-color)" />
+                                    )}
+                                    <h3>{service.title}</h3>
+                                    <p>{service.shortDescription}</p>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </div>
 
@@ -66,12 +77,26 @@ const styles = {
         lineHeight: '1.8',
         marginBottom: '24px'
     },
+    cardLink: {
+        textDecoration: 'none',
+        color: 'inherit',
+        display: 'block'
+    },
     card: {
         background: 'white',
         padding: '24px',
         borderRadius: '8px',
         textAlign: 'center',
-        boxShadow: 'var(--shadow)'
+        boxShadow: 'var(--shadow)',
+        height: '100%',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        cursor: 'pointer'
+    },
+    cardIcon: {
+        width: '48px',
+        height: '48px',
+        objectFit: 'contain',
+        margin: '0 auto'
     },
     statNumber: {
         fontSize: '36px',
