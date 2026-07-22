@@ -152,7 +152,7 @@ export const documentAPI = {
     getDownloadUrl: (id) => api.get(`/documents/download/${id}`),
     
     // Upload document (admin only)
-    upload: (formData) => api.post('/documents/upload', formData, {
+    upload: (formData) => api.post('/documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
     }),
     
