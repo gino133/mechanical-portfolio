@@ -139,8 +139,19 @@ const deleteDocument = async (req, res) => {
     }
 
     // Delete from Cloudinary
+    // FIX: non-image documents (pdf/dwg/docx/xlsx...) are now uploaded as
+    // resource_type 'raw' (see uploadMiddleware.js). destroy() defaults to
+    // resource_type 'image' when not specified, which silently fails to
+    // remove raw files, leaving them orphaned in Cloudinary storage.
     const publicId = document.fileUrl.split('/').pop().split('.')[0];
-    await cloudinary.uploader.destroy(`portfolio/${publicId}`);
+    const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes((document.fileType || '').toLowerCase());
+    try {
+        await cloudinary.uploader.destroy(`portfolio/${publicId}`, {
+            resource_type: isImage ? 'image' : 'raw'
+        });
+    } catch (error) {
+        console.error('Cloudinary delete failed (record will still be removed):', error.message);
+    }
 
     await document.deleteOne();
 
