@@ -53,7 +53,7 @@ const DocumentsManager = () => {
         }
 
         try {
-            await api.post('/documents/upload', data, {
+            await api.post('/documents', data, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
