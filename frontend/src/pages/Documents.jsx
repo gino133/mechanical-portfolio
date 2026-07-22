@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { FiSearch, FiDownload, FiEye, FiFile } from 'react-icons/fi';
 import { documentAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
@@ -111,15 +112,17 @@ const Documents = () => {
                         <div style={{ ...styles.board, gridTemplateColumns: `repeat(${columnCount}, minmax(220px, 1fr))` }}>
                             {columns.map(col => (
                                 <div key={col.id} style={styles.column}>
-                                    <div style={styles.columnHeader}>
-                                        <span>{col.label}</span>
-                                        <span style={styles.countBadge}>{col.docs.length}</span>
-                                    </div>
+                                    <Link to={`/documents/category/${col.id}`} style={styles.columnHeaderLink}>
+                                        <div style={styles.columnHeader}>
+                                            <span>{col.label}</span>
+                                            <span style={styles.countBadge}>{col.docs.length}</span>
+                                        </div>
+                                    </Link>
                                     <div style={styles.columnBody}>
                                         {col.docs.length === 0 && (
                                             <p style={styles.emptyCol}>Không có tài liệu</p>
                                         )}
-                                        {col.docs.map(doc => (
+                                        {col.docs.slice(0, 5).map(doc => (
                                             <div key={doc._id} style={styles.docCard}>
                                                 <div style={styles.docIcon}><FiFile /></div>
                                                 <div style={styles.docInfo}>
@@ -142,6 +145,11 @@ const Documents = () => {
                                                 </div>
                                             </div>
                                         ))}
+                                        {col.docs.length > 5 && (
+                                            <Link to={`/documents/category/${col.id}`} style={styles.viewAllLink}>
+                                                Xem tất cả {col.docs.length} tài liệu →
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -202,6 +210,10 @@ const styles = {
         display: 'flex',
         flexDirection: 'column'
     },
+    columnHeaderLink: {
+        textDecoration: 'none',
+        display: 'block'
+    },
     columnHeader: {
         background: 'var(--primary-color)',
         color: 'white',
@@ -209,7 +221,20 @@ const styles = {
         fontWeight: 'bold',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        cursor: 'pointer'
+    },
+    viewAllLink: {
+        display: 'block',
+        textAlign: 'center',
+        padding: '10px',
+        color: 'var(--primary-color)',
+        fontSize: '13px',
+        fontWeight: '600',
+        textDecoration: 'none',
+        background: 'white',
+        borderRadius: '8px',
+        border: '1px dashed var(--border-color)'
     },
     countBadge: {
         background: 'rgba(255,255,255,0.25)',

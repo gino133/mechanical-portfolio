@@ -13,6 +13,7 @@ import ProductDetail from './pages/ProductDetail';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import Documents from './pages/Documents';
+import DocumentCategory from './pages/DocumentCategory';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import ServiceDetail from './pages/ServiceDetail';
@@ -69,6 +70,7 @@ function App() {
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/projects/:id" element={<ProjectDetail />} />
                             <Route path="/documents" element={<Documents />} />
+                            <Route path="/documents/category/:categoryId" element={<DocumentCategory />} />
                             <Route path="/blog" element={<Blog />} />
                             <Route path="/blog/:slug" element={<BlogDetail />} />
                             <Route path="/services/:slug" element={<ServiceDetail />} />
