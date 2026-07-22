@@ -95,7 +95,7 @@ const DocumentCategory = () => {
                                 <div key={doc._id} style={styles.docRow}>
                                     <div style={styles.docIcon}><FiFile size={22} /></div>
                                     <div style={styles.docInfo}>
-                                        <p style={styles.docName}>{doc.name}</p>
+                                        <p style={styles.docName} onClick={() => handleView(doc)}>{doc.name}</p>
                                         <div style={styles.docMeta}>
                                             <span style={styles.typeBadge}>{doc.fileType?.toUpperCase()}</span>
                                             <span>{doc.fileSize ? (doc.fileSize / 1024 / 1024).toFixed(2) + ' MB' : ''}</span>
@@ -184,7 +184,12 @@ const styles = {
     docName: {
         fontWeight: '500',
         fontSize: '15px',
-        marginBottom: '6px'
+        marginBottom: '6px',
+        cursor: 'pointer',
+        color: 'var(--primary-color)',
+        textDecoration: 'underline',
+        textDecorationColor: 'transparent',
+        transition: 'text-decoration-color 0.15s'
     },
     docMeta: {
         display: 'flex',

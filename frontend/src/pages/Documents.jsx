@@ -126,7 +126,7 @@ const Documents = () => {
                                             <div key={doc._id} style={styles.docCard}>
                                                 <div style={styles.docIcon}><FiFile /></div>
                                                 <div style={styles.docInfo}>
-                                                    <p style={styles.docName} title={doc.name}>{doc.name}</p>
+                                                    <p style={styles.docName} title={doc.name} onClick={() => handleView(doc)}>{doc.name}</p>
                                                     <div style={styles.docMeta}>
                                                         <span style={styles.typeBadge}>{doc.fileType?.toUpperCase()}</span>
                                                         <span>{doc.fileSize ? (doc.fileSize / 1024 / 1024).toFixed(2) + ' MB' : ''}</span>
@@ -279,7 +279,8 @@ const styles = {
         marginBottom: '6px',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap'
+        whiteSpace: 'nowrap',
+        cursor: 'pointer'
     },
     docMeta: {
         display: 'flex',
