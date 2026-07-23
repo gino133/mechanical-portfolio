@@ -184,6 +184,18 @@ body {
     gap: 48px;
 }
 
+/* Documents page: category board, up to 5 columns on desktop (count set
+   via the --doc-columns custom property from JS, capped at 5 there).
+   Previously this was computed with an inline gridTemplateColumns style,
+   which - being inline - could never be overridden by the media queries
+   below, causing columns to overflow the screen on mobile/tablet. */
+.documents-board {
+    display: grid;
+    gap: 20px;
+    align-items: start;
+    grid-template-columns: repeat(var(--doc-columns, 3), minmax(220px, 1fr));
+}
+
 /* Footer: Về tôi / Liên kết nhanh / Thông tin liên hệ */
 .footer-grid {
     display: grid;
@@ -196,6 +208,11 @@ body {
 @media (max-width: 1024px) {
     .grid-4 { grid-template-columns: repeat(3, 1fr); }
     .grid-3 { grid-template-columns: repeat(2, 1fr); }
+
+    /* Tablet: cap the documents board at 2 columns regardless of how many
+       categories exist, so columns stay a readable width instead of being
+       squeezed to fit 4-5 across a tablet-width screen. */
+    .documents-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
@@ -211,6 +228,11 @@ body {
     .about-grid { grid-template-columns: 1fr; gap: 24px; }
     .about-info-grid { grid-template-columns: 1fr; }
     .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+
+    /* Mobile: documents board drops to a single column - the 220px min
+       width per column from the desktop rule doesn't fit 2+ columns on a
+       narrow phone screen, which was pushing content off-screen. */
+    .documents-board { grid-template-columns: 1fr; gap: 16px; }
 
     /* Footer: keep "Liên kết nhanh" + "Thông tin liên hệ" side by side in
        2 columns even on mobile, with "Về tôi" spanning full width above
