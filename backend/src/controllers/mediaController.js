@@ -16,7 +16,7 @@ const uploadMedia = async (req, res) => {
         const media = await Media.create({
             url: req.file.path,
             publicId: req.file.filename, // set by multer-storage-cloudinary
-            fileName: req.file.originalname,
+            fileName: req.body.name ? req.body.name.trim() : req.file.originalname,
             fileSize: req.file.size,
             mimeType: req.file.mimetype
         });
