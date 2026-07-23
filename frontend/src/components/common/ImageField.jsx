@@ -11,8 +11,8 @@ import MediaLibraryModal from './MediaLibraryModal';
 const ImageField = ({ value, onChange, label }) => {
     const [showModal, setShowModal] = useState(false);
 
-    const handleSelect = (url) => {
-        onChange(url);
+    const handleSelect = (urls) => {
+        onChange(urls[0]);
         setShowModal(false);
     };
 

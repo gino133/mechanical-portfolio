@@ -11,9 +11,10 @@ import MediaLibraryModal from './MediaLibraryModal';
 const MultiImageField = ({ value = [], onChange, label }) => {
     const [showModal, setShowModal] = useState(false);
 
-    const handleSelect = (url) => {
-        if (!value.includes(url)) {
-            onChange([...value, url]);
+    const handleSelect = (urls) => {
+        const newUrls = urls.filter((url) => !value.includes(url));
+        if (newUrls.length > 0) {
+            onChange([...value, ...newUrls]);
         }
         setShowModal(false);
     };
