@@ -109,7 +109,10 @@ const Documents = () => {
                     {columns.length === 0 ? (
                         <p style={styles.noResults}>Chưa có tài liệu nào được tải lên</p>
                     ) : (
-                        <div style={{ ...styles.board, gridTemplateColumns: `repeat(${columnCount}, minmax(220px, 1fr))` }}>
+                        <div
+                            className="documents-board"
+                            style={{ '--doc-columns': columnCount }}
+                        >
                             {columns.map(col => (
                                 <div key={col.id} style={styles.column}>
                                     <Link to={`/documents/category/${col.id}`} style={styles.columnHeaderLink}>
