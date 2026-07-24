@@ -23,6 +23,11 @@ const documentSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    // Cloudinary public_id (including resource_type context) - saved at
+    // upload time so deletion is reliable instead of parsed from the URL.
+    publicId: {
+        type: String
+    },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category'

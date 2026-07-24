@@ -17,11 +17,32 @@ const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
-        const isImage = IMAGE_EXTENSIONS.includes(ext);
+        const ext = path.extname(file.originalname).toLowerCase(); // e.g. '.docx', includes the dot
+        const extNoDot = ext.replace('.', '');
+        const isImage = IMAGE_EXTENSIONS.includes(extNoDot);
+
+        if (isImage) {
+            return {
+                folder: 'portfolio',
+                resource_type: 'image'
+            };
+        }
+
+        // FIX: for resource_type 'raw', Cloudinary uses the public_id as
+        // the literal delivered filename - it does NOT append the
+        // extension separately the way it does for images. Without the
+        // extension baked into public_id here, uploaded documents (docx,
+        // dwg, xlsx...) lost their file extension entirely, so downloaded
+        // files couldn't be opened by Word/AutoCAD/Excel.
+        const baseName = path.basename(file.originalname, ext)
+            .replace(/[^a-zA-Z0-9_-]/g, '_')
+            .substring(0, 80);
+        const uniqueSuffix = Date.now();
+
         return {
             folder: 'portfolio',
-            resource_type: isImage ? 'image' : 'raw'
+            resource_type: 'raw',
+            public_id: `${baseName}-${uniqueSuffix}${ext}`
         };
     }
 });

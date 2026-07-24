@@ -113,6 +113,9 @@ const uploadDocument = async (req, res) => {
         fileType: fileType,
         fileSize: fileSize,
         fileUrl: req.file.path,
+        // multer-storage-cloudinary sets req.file.filename to the actual
+        // public_id used on Cloudinary - save it so deletion is reliable.
+        publicId: req.file.filename,
         category: req.body.category || undefined,
         relatedId: req.body.relatedId || undefined,
         relatedType: req.body.relatedType || undefined,
@@ -139,14 +142,17 @@ const deleteDocument = async (req, res) => {
     }
 
     // Delete from Cloudinary
-    // FIX: non-image documents (pdf/dwg/docx/xlsx...) are now uploaded as
+    // FIX: non-image documents (pdf/dwg/docx/xlsx...) are uploaded as
     // resource_type 'raw' (see uploadMiddleware.js). destroy() defaults to
     // resource_type 'image' when not specified, which silently fails to
-    // remove raw files, leaving them orphaned in Cloudinary storage.
-    const publicId = document.fileUrl.split('/').pop().split('.')[0];
+    // remove raw files, leaving them orphaned in Cloudinary storage. Also
+    // prefer the publicId saved at upload time - the old URL-parsing
+    // fallback breaks for filenames containing dots (now common, since
+    // extensions are baked into the raw public_id).
     const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes((document.fileType || '').toLowerCase());
+    const publicId = document.publicId || `portfolio/${document.fileUrl.split('/').pop().split('.')[0]}`;
     try {
-        await cloudinary.uploader.destroy(`portfolio/${publicId}`, {
+        await cloudinary.uploader.destroy(publicId, {
             resource_type: isImage ? 'image' : 'raw'
         });
     } catch (error) {
