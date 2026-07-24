@@ -129,7 +129,7 @@ const MessagesManager = () => {
         <div style={styles.container}>
             <h2 style={styles.title}>Tin nhắn liên hệ</h2>
 
-            <div style={styles.grid}>
+            <div className="admin-messages-grid">
                 <div style={styles.list}>
                     {messages.length === 0 ? (
                         <div style={styles.empty}>Chưa có tin nhắn nào</div>

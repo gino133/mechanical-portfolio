@@ -280,3 +280,73 @@ body {
 .blog-content .ql-size-28px { font-size: 28px; }
 .blog-content .ql-size-32px { font-size: 32px; }
 .blog-content .ql-size-40px { font-size: 40px; }
+
+/* ===== Admin panel mobile optimization ===== */
+
+/* Menu toggle (hamburger) and drawer close button: hidden on desktop,
+   shown only on mobile/tablet where the sidebar becomes a slide-in drawer. */
+.admin-menu-toggle,
+.admin-sidebar-close {
+    display: none;
+}
+
+/* Backdrop behind the mobile drawer - only relevant (and only rendered by
+   React) on mobile, but hide unconditionally on desktop as a safety net. */
+.admin-backdrop {
+    display: block;
+}
+
+/* Any <table> used in the admin panel (Products/Projects/Documents/
+   Categories/Blog managers etc.) gets wrapped in this scroll container so
+   on narrow screens the admin can swipe the table horizontally instead of
+   every column being squeezed unreadably thin. */
+.admin-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+}
+.admin-table-wrap table {
+    min-width: 640px;
+}
+
+/* Messages admin page: list + detail panel */
+.admin-messages-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 24px;
+}
+
+@media (max-width: 992px) {
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        width: 260px !important;
+    }
+    .admin-sidebar-open {
+        transform: translateX(0);
+    }
+    .admin-menu-toggle {
+        display: flex;
+        align-items: center;
+    }
+    .admin-sidebar-close {
+        display: flex;
+        align-items: center;
+    }
+
+    .admin-messages-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 993px) {
+    .admin-backdrop {
+        display: none;
+    }
+}

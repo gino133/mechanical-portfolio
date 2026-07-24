@@ -205,6 +205,7 @@ const BlogManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -238,6 +239,7 @@ const BlogManager = () => {
                     )}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

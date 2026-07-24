@@ -173,6 +173,7 @@ const CategoriesManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -203,6 +204,7 @@ const CategoriesManager = () => {
                     )}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

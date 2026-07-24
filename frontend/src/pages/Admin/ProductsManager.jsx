@@ -216,6 +216,7 @@ const ProductsManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -241,6 +242,7 @@ const ProductsManager = () => {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

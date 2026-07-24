@@ -217,6 +217,7 @@ const DocumentsManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -248,6 +249,7 @@ const DocumentsManager = () => {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

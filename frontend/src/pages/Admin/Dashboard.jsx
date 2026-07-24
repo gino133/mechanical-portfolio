@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { FiPackage, FiFolder, FiFileText, FiLogOut, FiSettings, FiMenu, FiMail, FiTag, FiEdit3, FiTool } from 'react-icons/fi';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { FiPackage, FiFolder, FiFileText, FiLogOut, FiSettings, FiMenu, FiMail, FiTag, FiEdit3, FiTool, FiX } from 'react-icons/fi';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [user, setUser] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -15,6 +17,11 @@ const AdminDashboard = () => {
         const userData = JSON.parse(localStorage.getItem('user') || '{}');
         setUser(userData);
     }, [navigate]);
+
+    // Close the mobile drawer whenever the admin navigates to a new page
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location.pathname]);
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -37,10 +44,21 @@ const AdminDashboard = () => {
 
     return (
         <div style={styles.container}>
-            {/* Sidebar */}
-            <aside style={styles.sidebar}>
+            {/* Mobile-only backdrop, closes the drawer when tapped */}
+            {sidebarOpen && (
+                <div className="admin-backdrop" style={styles.backdrop} onClick={() => setSidebarOpen(false)} />
+            )}
+
+            {/* Sidebar - fixed on desktop, slide-in drawer on mobile via
+                the "admin-sidebar" / "admin-sidebar-open" CSS classes */}
+            <aside className={`admin-sidebar ${sidebarOpen ? 'admin-sidebar-open' : ''}`} style={styles.sidebar}>
                 <div style={styles.logo}>
-                    <h2>Admin Panel</h2>
+                    <div style={styles.logoRow}>
+                        <h2 style={{ margin: 0 }}>Admin Panel</h2>
+                        <button className="admin-sidebar-close" onClick={() => setSidebarOpen(false)} style={styles.closeBtn}>
+                            <FiX size={22} />
+                        </button>
+                    </div>
                     {user && <p style={styles.userName}>{user.name}</p>}
                 </div>
                 <nav style={styles.nav}>
@@ -59,7 +77,10 @@ const AdminDashboard = () => {
             {/* Main content */}
             <main style={styles.main}>
                 <div style={styles.header}>
-                    <h1>Quản lý nội dung</h1>
+                    <button className="admin-menu-toggle" onClick={() => setSidebarOpen(true)} style={styles.menuToggle}>
+                        <FiMenu size={22} />
+                    </button>
+                    <h1 style={{ fontSize: '20px', margin: 0 }}>Quản lý nội dung</h1>
                 </div>
                 <div style={styles.content}>
                     <Outlet />
@@ -74,16 +95,38 @@ const styles = {
         display: 'flex',
         minHeight: '100vh'
     },
+    backdrop: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 998
+    },
     sidebar: {
         width: '260px',
         background: '#1a3a5c',
         color: 'white',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        flexShrink: 0
     },
     logo: {
         padding: '24px',
         borderBottom: '1px solid rgba(255,255,255,0.1)'
+    },
+    logoRow: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+    },
+    closeBtn: {
+        background: 'none',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+        padding: 0
     },
     userName: {
         fontSize: '14px',
@@ -92,7 +135,8 @@ const styles = {
     },
     nav: {
         flex: 1,
-        padding: '20px 0'
+        padding: '20px 0',
+        overflowY: 'auto'
     },
     navLink: {
         display: 'flex',
@@ -118,15 +162,26 @@ const styles = {
     },
     main: {
         flex: 1,
-        background: '#f5f7fa'
+        background: '#f5f7fa',
+        minWidth: 0 // allows content (tables etc.) to shrink/scroll instead of overflowing the page
+    },
+    menuToggle: {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        color: '#1a3a5c',
+        marginRight: '12px',
+        padding: 0
     },
     header: {
         background: 'white',
-        padding: '20px 32px',
-        borderBottom: '1px solid #e0e0e0'
+        padding: '16px 20px',
+        borderBottom: '1px solid #e0e0e0',
+        display: 'flex',
+        alignItems: 'center'
     },
     content: {
-        padding: '24px 32px'
+        padding: '20px'
     }
 };
 

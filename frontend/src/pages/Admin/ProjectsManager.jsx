@@ -228,6 +228,7 @@ const ProjectsManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -255,6 +256,7 @@ const ProjectsManager = () => {
                     ))}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };

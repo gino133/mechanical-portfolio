@@ -183,6 +183,7 @@ const ServicesManager = () => {
                 </div>
             )}
 
+            <div className="admin-table-wrap">
             <table style={styles.table}>
                 <thead>
                     <tr>
@@ -214,6 +215,7 @@ const ServicesManager = () => {
                     )}
                 </tbody>
             </table>
+            </div>
         </div>
     );
 };
