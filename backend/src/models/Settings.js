@@ -18,6 +18,13 @@ const menuItemSchema = new mongoose.Schema({
     visible: { type: Boolean, default: true }
 }, { _id: false });
 
+const homeSectionSchema = new mongoose.Schema({
+    key: { type: String, required: true },
+    label: { type: String, required: true },
+    enabled: { type: Boolean, default: true },
+    order: { type: Number, default: 0 }
+}, { _id: false });
+
 const footerLinkSchema = new mongoose.Schema({
     label: { type: String, required: true },
     path: { type: String, required: true }
@@ -141,6 +148,16 @@ const settingsSchema = new mongoose.Schema({
         { id: 4, label: 'Dự án', path: '/projects', order: 4, visible: true },
         { id: 5, label: 'Tài liệu', path: '/documents', order: 5, visible: true },
         { id: 6, label: 'Liên hệ', path: '/contact', order: 6, visible: true }
+    ] },
+
+    // Homepage section layout - which content blocks show on the homepage,
+    // and in what order.
+    homeSections: { type: [homeSectionSchema], default: [
+        { key: 'hero', label: 'Banner đầu trang (Hero)', enabled: true, order: 1 },
+        { key: 'intro', label: 'Giới thiệu & Dịch vụ', enabled: true, order: 2 },
+        { key: 'products', label: 'Sản phẩm nổi bật', enabled: true, order: 3 },
+        { key: 'projects', label: 'Dự án nổi bật', enabled: true, order: 4 },
+        { key: 'blog', label: 'Bài viết Blog mới nhất', enabled: false, order: 5 }
     ] },
 
     // Chatbot / AI assistant widget
