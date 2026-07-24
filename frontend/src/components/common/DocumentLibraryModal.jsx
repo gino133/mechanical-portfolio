@@ -1,0 +1,307 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { documentAPI } from '../../services/api';
+import { FiUpload, FiX, FiCheck, FiFile, FiTrash2 } from 'react-icons/fi';
+
+const stripExtension = (fileName) => fileName.replace(/\.[^/.]+$/, '');
+
+/**
+ * Props:
+ * - onSelect(docs): called with an ARRAY of document objects ({_id, name,
+ *   fileUrl, fileType, ...}) when the user picks from the library or
+ *   finishes a bulk upload
+ * - onClose(): called to dismiss the modal
+ * - alreadySelectedIds: array of document _id already attached, so the
+ *   library grid can show them as selected/disabled
+ */
+const DocumentLibraryModal = ({ onSelect, onClose, alreadySelectedIds = [] }) => {
+    const [tab, setTab] = useState('library'); // 'library' | 'upload'
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [checkedIds, setCheckedIds] = useState([]);
+    const [dragOver, setDragOver] = useState(false);
+    const fileInputRef = useRef(null);
+
+    const [pendingFiles, setPendingFiles] = useState([]); // [{ file, name }]
+    const [uploading, setUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
+
+    useEffect(() => {
+        fetchLibrary();
+    }, []);
+
+    const fetchLibrary = async () => {
+        setLoading(true);
+        try {
+            const response = await documentAPI.getAll({ limit: 500 });
+            setItems(response.data.data);
+        } catch (error) {
+            console.error('Lỗi tải thư viện tài liệu:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const toggleCheck = (id) => {
+        setCheckedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    };
+
+    const confirmLibrarySelection = () => {
+        const selected = items.filter((item) => checkedIds.includes(item._id));
+        onSelect(selected);
+    };
+
+    const addFilesToPending = (fileList) => {
+        const staged = Array.from(fileList).map((file) => ({ file, name: stripExtension(file.name) }));
+        setPendingFiles((prev) => [...prev, ...staged]);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer.files.length) addFilesToPending(e.dataTransfer.files);
+    };
+
+    const updatePendingName = (index, name) => {
+        setPendingFiles((prev) => prev.map((p, i) => (i === index ? { ...p, name } : p)));
+    };
+
+    const removePending = (index) => {
+        setPendingFiles((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleUploadAll = async () => {
+        if (pendingFiles.length === 0) return;
+        setUploading(true);
+        setUploadProgress({ done: 0, total: pendingFiles.length });
+
+        const uploaded = [];
+        for (const pending of pendingFiles) {
+            try {
+                const formData = new FormData();
+                formData.append('name', pending.name);
+                formData.append('file', pending.file);
+                const response = await documentAPI.upload(formData);
+                uploaded.push(response.data.data);
+            } catch (error) {
+                console.error(`Lỗi upload "${pending.name}":`, error);
+                const serverMessage = error.response?.data?.message;
+                alert(`Upload "${pending.name}" thất bại: ${serverMessage || 'lỗi không xác định'}. Các file khác vẫn tiếp tục upload.`);
+            }
+            setUploadProgress((prev) => ({ ...prev, done: prev.done + 1 }));
+        }
+
+        setItems((prev) => [...uploaded, ...prev]);
+        setPendingFiles([]);
+        setUploading(false);
+
+        if (uploaded.length > 0) {
+            onSelect(uploaded);
+        }
+    };
+
+    return (
+        <div style={styles.backdrop} onClick={onClose}>
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+                <div style={styles.header}>
+                    <h3 style={{ margin: 0 }}>Chọn tài liệu</h3>
+                    <button onClick={onClose} style={styles.closeBtn}><FiX size={20} /></button>
+                </div>
+
+                <div style={styles.tabs}>
+                    <button
+                        onClick={() => setTab('library')}
+                        style={{ ...styles.tab, ...(tab === 'library' ? styles.tabActive : {}) }}
+                    >
+                        Thư viện tài liệu ({items.length})
+                    </button>
+                    <button
+                        onClick={() => setTab('upload')}
+                        style={{ ...styles.tab, ...(tab === 'upload' ? styles.tabActive : {}) }}
+                    >
+                        Tải tài liệu mới lên
+                    </button>
+                </div>
+
+                {tab === 'upload' && (
+                    <div style={{ overflowY: 'auto' }}>
+                        {pendingFiles.length === 0 ? (
+                            <div
+                                style={{ ...styles.dropZone, ...(dragOver ? styles.dropZoneActive : {}) }}
+                                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                                onDragLeave={() => setDragOver(false)}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current.click()}
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    multiple
+                                    style={{ display: 'none' }}
+                                    onChange={(e) => e.target.files.length && addFilesToPending(e.target.files)}
+                                />
+                                <FiUpload size={36} color="#999" />
+                                <p style={{ marginTop: '12px', color: '#666' }}>
+                                    Kéo thả nhiều file vào đây, hoặc bấm để chọn (chọn được nhiều file cùng lúc)
+                                </p>
+                            </div>
+                        ) : (
+                            <div style={styles.pendingWrap}>
+                                <p style={styles.pendingHint}>
+                                    Tên mặc định lấy theo tên file - bạn có thể sửa lại trước khi upload.
+                                </p>
+                                <div style={styles.pendingList}>
+                                    {pendingFiles.map((p, index) => (
+                                        <div key={index} style={styles.pendingRow}>
+                                            <FiFile style={{ flexShrink: 0, color: '#1a3a5c' }} />
+                                            <input
+                                                type="text"
+                                                value={p.name}
+                                                onChange={(e) => updatePendingName(index, e.target.value)}
+                                                style={styles.pendingInput}
+                                                disabled={uploading}
+                                            />
+                                            <button
+                                                onClick={() => removePending(index)}
+                                                style={styles.pendingRemove}
+                                                disabled={uploading}
+                                                title="Bỏ file này"
+                                            >
+                                                <FiX size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div style={styles.pendingActions}>
+                                    <button
+                                        onClick={() => fileInputRef.current.click()}
+                                        style={styles.addMoreBtn}
+                                        disabled={uploading}
+                                    >
+                                        + Thêm file khác
+                                    </button>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        multiple
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => e.target.files.length && addFilesToPending(e.target.files)}
+                                    />
+                                    <button onClick={handleUploadAll} disabled={uploading} style={styles.uploadAllBtn}>
+                                        <FiCheck />
+                                        {uploading
+                                            ? `Đang upload ${uploadProgress.done}/${uploadProgress.total}...`
+                                            : `Upload tất cả (${pendingFiles.length})`}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {tab === 'library' && (
+                    loading ? (
+                        <div style={{ padding: '40px', textAlign: 'center' }}>Đang tải...</div>
+                    ) : items.length === 0 ? (
+                        <div style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
+                            Chưa có tài liệu nào trong thư viện. Chuyển sang tab "Tải tài liệu mới lên" để bắt đầu.
+                        </div>
+                    ) : (
+                        <>
+                            <div style={styles.list}>
+                                {items.map((item) => {
+                                    const isAlreadyAttached = alreadySelectedIds.includes(item._id);
+                                    const isChecked = checkedIds.includes(item._id);
+                                    return (
+                                        <label
+                                            key={item._id}
+                                            style={{
+                                                ...styles.listRow,
+                                                ...(isAlreadyAttached ? styles.listRowDisabled : {})
+                                            }}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={isChecked || isAlreadyAttached}
+                                                disabled={isAlreadyAttached}
+                                                onChange={() => toggleCheck(item._id)}
+                                            />
+                                            <FiFile style={{ color: '#1a3a5c', flexShrink: 0 }} />
+                                            <span style={styles.listName}>{item.name}</span>
+                                            <span style={styles.listType}>{item.fileType?.toUpperCase()}</span>
+                                            {isAlreadyAttached && <span style={styles.attachedTag}>Đã đính kèm</span>}
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                            <div style={styles.footer}>
+                                <button
+                                    onClick={confirmLibrarySelection}
+                                    disabled={checkedIds.length === 0}
+                                    style={styles.confirmBtn}
+                                >
+                                    Đính kèm ({checkedIds.length}) tài liệu đã chọn
+                                </button>
+                            </div>
+                        </>
+                    )
+                )}
+            </div>
+        </div>
+    );
+};
+
+const styles = {
+    backdrop: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', zIndex: 3000, padding: '20px'
+    },
+    modal: {
+        background: 'white', borderRadius: '12px', width: '600px', maxWidth: '100%',
+        maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden'
+    },
+    header: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '16px 20px', borderBottom: '1px solid #eee'
+    },
+    closeBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#666' },
+    tabs: { display: 'flex', gap: '8px', padding: '12px 20px 0' },
+    tab: {
+        padding: '8px 16px', border: '1px solid #ddd', background: 'white',
+        borderRadius: '6px 6px 0 0', cursor: 'pointer', fontSize: '14px'
+    },
+    tabActive: { background: '#1a3a5c', color: 'white', borderColor: '#1a3a5c' },
+    dropZone: {
+        margin: '20px', padding: '40px', border: '2px dashed #ccc', borderRadius: '10px',
+        textAlign: 'center', cursor: 'pointer', transition: 'all 0.2s'
+    },
+    dropZoneActive: { borderColor: '#1a3a5c', background: '#f0f7ff' },
+    pendingWrap: { padding: '20px' },
+    pendingHint: { fontSize: '13px', color: '#777', marginBottom: '10px' },
+    pendingList: { display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto', marginBottom: '12px' },
+    pendingRow: { display: 'flex', alignItems: 'center', gap: '10px' },
+    pendingInput: { flex: 1, padding: '8px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' },
+    pendingRemove: { background: '#fee', color: '#c00', border: 'none', borderRadius: '6px', padding: '8px', cursor: 'pointer', flexShrink: 0 },
+    pendingActions: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+    addMoreBtn: { background: 'white', border: '1px solid #ddd', borderRadius: '6px', padding: '10px 16px', cursor: 'pointer', fontSize: '14px' },
+    uploadAllBtn: {
+        background: '#28a745', color: 'white', border: 'none', borderRadius: '6px',
+        padding: '10px 20px', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px'
+    },
+    list: { padding: '12px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '6px' },
+    listRow: {
+        display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+        border: '1px solid #eee', borderRadius: '8px', cursor: 'pointer'
+    },
+    listRowDisabled: { opacity: 0.6, cursor: 'not-allowed', background: '#f7f7f7' },
+    listName: { flex: 1, fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+    listType: { fontSize: '11px', background: '#e3f2fd', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 },
+    attachedTag: { fontSize: '11px', color: '#28a745', flexShrink: 0 },
+    footer: { padding: '16px 20px', borderTop: '1px solid #eee', textAlign: 'right' },
+    confirmBtn: {
+        background: '#1a3a5c', color: 'white', border: 'none', borderRadius: '6px',
+        padding: '10px 20px', cursor: 'pointer', fontSize: '14px'
+    }
+};
+
+export default DocumentLibraryModal;

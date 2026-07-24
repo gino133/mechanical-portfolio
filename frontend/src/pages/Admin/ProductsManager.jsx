@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
 import ImageField from '../../components/common/ImageField';
 import MultiImageField from '../../components/common/MultiImageField';
+import DocumentField from '../../components/common/DocumentField';
 
 const emptyForm = {
     name: '',
@@ -10,6 +11,7 @@ const emptyForm = {
     category: '',
     description: '',
     images: [],
+    documents: [],
     isFeatured: false
 };
 
@@ -67,6 +69,7 @@ const ProductsManager = () => {
             description: formData.description,
             thumbnail: formData.images[0],
             images: formData.images,
+            documents: formData.documents.map((d) => d._id),
             isFeatured: formData.isFeatured
         };
 
@@ -90,19 +93,28 @@ const ProductsManager = () => {
         }
     };
 
-    const openEditForm = (product) => {
-        setEditingProduct(product);
-        setFormData({
-            name: product.name,
-            code: product.code,
-            // product.category comes back populated as {_id, name, slug} - the
-            // <select> needs just the id string.
-            category: product.category?._id || product.category || '',
-            description: product.description,
-            images: product.images || [],
-            isFeatured: product.isFeatured
-        });
-        setShowForm(true);
+    const openEditForm = async (product) => {
+        try {
+            // The list endpoint doesn't populate "documents" - fetch the
+            // full product (which does) so DocumentField shows real names.
+            const response = await api.get(`/products/${product._id}`);
+            const full = response.data.data;
+            setEditingProduct(full);
+            setFormData({
+                name: full.name,
+                code: full.code,
+                // full.category comes back populated as {_id, name, slug} -
+                // the <select> needs just the id string.
+                category: full.category?._id || full.category || '',
+                description: full.description,
+                images: full.images || [],
+                documents: full.documents || [],
+                isFeatured: full.isFeatured
+            });
+            setShowForm(true);
+        } catch (error) {
+            console.error('Lỗi tải sản phẩm:', error);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -178,6 +190,11 @@ const ProductsManager = () => {
                                 label="Hình ảnh sản phẩm"
                                 value={formData.images}
                                 onChange={(images) => setFormData({ ...formData, images })}
+                            />
+                            <DocumentField
+                                label="Tài liệu đính kèm (bản vẽ, thuyết minh...)"
+                                value={formData.documents}
+                                onChange={(documents) => setFormData({ ...formData, documents })}
                             />
                             <label style={styles.checkbox}>
                                 <input

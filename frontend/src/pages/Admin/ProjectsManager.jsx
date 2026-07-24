@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
 import MultiImageField from '../../components/common/MultiImageField';
+import DocumentField from '../../components/common/DocumentField';
 
 const emptyForm = {
     name: '',
@@ -10,6 +11,7 @@ const emptyForm = {
     year: new Date().getFullYear(),
     description: '',
     gallery: [],
+    documents: [],
     technicalInfo: {},
     isFeatured: false
 };
@@ -69,6 +71,7 @@ const ProjectsManager = () => {
             description: formData.description,
             thumbnail: formData.gallery[0],
             gallery: formData.gallery,
+            documents: formData.documents.map((d) => d._id),
             technicalInfo: formData.technicalInfo,
             isFeatured: formData.isFeatured
         };
@@ -93,19 +96,28 @@ const ProjectsManager = () => {
         }
     };
 
-    const openEditForm = (project) => {
-        setEditingProject(project);
-        setFormData({
-            name: project.name,
-            client: project.client,
-            category: project.category?._id || project.category || '',
-            year: project.year,
-            description: project.description,
-            gallery: project.gallery || [],
-            technicalInfo: project.technicalInfo || {},
-            isFeatured: project.isFeatured || false
-        });
-        setShowForm(true);
+    const openEditForm = async (project) => {
+        try {
+            // The list endpoint doesn't populate "documents" - fetch the
+            // full project (which does) so DocumentField shows real names.
+            const response = await api.get(`/projects/${project._id}`);
+            const full = response.data.data;
+            setEditingProject(full);
+            setFormData({
+                name: full.name,
+                client: full.client,
+                category: full.category?._id || full.category || '',
+                year: full.year,
+                description: full.description,
+                gallery: full.gallery || [],
+                documents: full.documents || [],
+                technicalInfo: full.technicalInfo || {},
+                isFeatured: full.isFeatured || false
+            });
+            setShowForm(true);
+        } catch (error) {
+            console.error('Lỗi tải dự án:', error);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -190,6 +202,11 @@ const ProjectsManager = () => {
                                 label="Hình ảnh dự án (ảnh đầu tiên dùng làm thumbnail)"
                                 value={formData.gallery}
                                 onChange={(gallery) => setFormData({ ...formData, gallery })}
+                            />
+                            <DocumentField
+                                label="Tài liệu đính kèm (bản vẽ, thuyết minh...)"
+                                value={formData.documents}
+                                onChange={(documents) => setFormData({ ...formData, documents })}
                             />
                             <label style={styles.checkbox}>
                                 <input
