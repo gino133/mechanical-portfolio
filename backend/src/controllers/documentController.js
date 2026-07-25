@@ -1,5 +1,6 @@
 const Document = require('../models/Document');
 const cloudinary = require('../config/cloudinary');
+const removeDiacritics = require('../utils/removeDiacritics');
 
 // @desc    Get all documents
 // @route   GET /api/v1/documents
@@ -22,7 +23,8 @@ const getDocuments = async (req, res) => {
     }
 
     if (search) {
-        query.name = { $regex: search, $options: 'i' };
+        // Diacritic-insensitive.
+        query.searchText = { $regex: removeDiacritics(search), $options: 'i' };
     }
 
     const documents = await Document.find(query)

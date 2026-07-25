@@ -350,3 +350,24 @@ body {
         display: none;
     }
 }
+
+/* ===== Navbar ===== */
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.header-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+.header-search-input:focus {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 900px) {
+    /* Shrink the desktop search box a bit before the layout switches to
+       the mobile hamburger menu, so it doesn't crowd the nav links. */
+    .header-search-input {
+        width: 130px !important;
+    }
+}

@@ -18,6 +18,7 @@ import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import ServiceDetail from './pages/ServiceDetail';
 import Contact from './pages/Contact';
+import SearchResults from './pages/SearchResults';
 
 // Admin pages
 import AdminLogin from './pages/Admin/Login';
@@ -75,6 +76,7 @@ function App() {
                             <Route path="/blog/:slug" element={<BlogDetail />} />
                             <Route path="/services/:slug" element={<ServiceDetail />} />
                             <Route path="/contact" element={<Contact />} />
+                            <Route path="/search" element={<SearchResults />} />
                             
                             {/* Admin Login - no layout */}
                             <Route path="/admin/login" element={<AdminLogin />} />

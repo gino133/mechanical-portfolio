@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const removeDiacritics = require('../utils/removeDiacritics');
 
 const productSchema = new mongoose.Schema({
     name: {
@@ -45,6 +46,12 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Accent-stripped, lowercased copy of name + code, kept in sync via the
+    // pre-save hook below - lets search match "may ep" against "Máy ép".
+    searchText: {
+        type: String,
+        default: ''
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -57,6 +64,7 @@ const productSchema = new mongoose.Schema({
 
 productSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
+    this.searchText = removeDiacritics(`${this.name} ${this.code}`);
     next();
 });
 

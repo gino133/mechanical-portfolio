@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const removeDiacritics = require('../utils/removeDiacritics');
 
 const blogSchema = new mongoose.Schema({
     title: {
@@ -40,6 +41,12 @@ const blogSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Accent-stripped, lowercased copy of title + excerpt, kept in sync via
+    // the pre-save hook below.
+    searchText: {
+        type: String,
+        default: ''
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -52,6 +59,7 @@ const blogSchema = new mongoose.Schema({
 
 blogSchema.pre('save', function (next) {
     this.updatedAt = Date.now();
+    this.searchText = removeDiacritics(`${this.title} ${this.excerpt}`);
     next();
 });
 

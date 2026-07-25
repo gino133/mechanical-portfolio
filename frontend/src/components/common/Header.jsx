@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { FiMenu, FiX } from 'react-icons/fi';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
 import { useSettings } from '../../contexts/SettingsContext';
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const location = useLocation();
+    const navigate = useNavigate();
     const { settings, menu } = useSettings();
 
     useEffect(() => {
@@ -28,6 +30,15 @@ const Header = () => {
         return location.pathname.startsWith(path);
     };
 
+    const handleSearchSubmit = (e) => {
+        e.preventDefault();
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+            setSearchTerm('');
+            setIsMenuOpen(false);
+        }
+    };
+
     // Mobile menu styles
     const mobileMenuStyles = {
         ...styles.mobileMenu,
@@ -46,13 +57,14 @@ const Header = () => {
                     )}
                 </Link>
 
-                {/* Desktop Menu */}
+                {/* Desktop Menu - centered between logo and search box */}
                 {!isMobile && (
                     <nav style={styles.navDesktop}>
                         {navItems.map(item => (
                             <Link
                                 key={item.id}
                                 to={item.path}
+                                className="nav-link"
                                 style={{
                                     ...styles.navLink,
                                     ...(isActive(item.path) && styles.navLinkActive)
@@ -62,6 +74,21 @@ const Header = () => {
                             </Link>
                         ))}
                     </nav>
+                )}
+
+                {/* Desktop search box */}
+                {!isMobile && (
+                    <form onSubmit={handleSearchSubmit} style={styles.searchForm}>
+                        <FiSearch style={styles.searchIcon} />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Tìm kiếm..."
+                            className="header-search-input"
+                            style={styles.searchInput}
+                        />
+                    </form>
                 )}
 
                 {/* Mobile Menu Button */}
@@ -76,6 +103,17 @@ const Header = () => {
 
                 {/* Mobile Menu Dropdown */}
                 <div style={mobileMenuStyles}>
+                    <form onSubmit={handleSearchSubmit} style={styles.mobileSearchForm}>
+                        <FiSearch style={styles.searchIcon} />
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Tìm kiếm..."
+                            className="header-search-input"
+                            style={styles.mobileSearchInput}
+                        />
+                    </form>
                     {navItems.map(item => (
                         <Link
                             key={item.id}
@@ -105,12 +143,14 @@ const styles = {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
+        gap: '24px',
         padding: '16px 20px',
         maxWidth: 'var(--container-width, 1200px)',
         margin: '0 auto'
     },
     logo: {
-        textDecoration: 'none'
+        textDecoration: 'none',
+        flexShrink: 0
     },
     logoText: {
         fontSize: '20px',
@@ -123,18 +163,45 @@ const styles = {
     },
     navDesktop: {
         display: 'flex',
-        gap: '24px'
+        gap: '8px',
+        flex: 1,
+        justifyContent: 'center'
     },
     navLink: {
         color: 'white',
         textDecoration: 'none',
-        padding: '8px 0',
-        transition: 'opacity 0.3s',
-        fontSize: '16px'
+        padding: '8px 14px',
+        borderRadius: '6px',
+        transition: 'background 0.2s',
+        fontSize: '16px',
+        whiteSpace: 'nowrap'
     },
     navLinkActive: {
-        borderBottom: '2px solid var(--accent-color)',
+        background: 'rgba(255,255,255,0.15)',
         color: 'var(--accent-color)'
+    },
+    searchForm: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        flexShrink: 0
+    },
+    searchIcon: {
+        position: 'absolute',
+        left: '10px',
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: '15px',
+        pointerEvents: 'none'
+    },
+    searchInput: {
+        width: '180px',
+        padding: '8px 12px 8px 32px',
+        borderRadius: '20px',
+        border: '1px solid rgba(255,255,255,0.3)',
+        background: 'rgba(255,255,255,0.1)',
+        color: 'white',
+        fontSize: '14px',
+        outline: 'none'
     },
     menuBtn: {
         background: 'none',
@@ -154,6 +221,22 @@ const styles = {
         gap: '12px',
         boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
         zIndex: 999
+    },
+    mobileSearchForm: {
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '4px'
+    },
+    mobileSearchInput: {
+        width: '100%',
+        padding: '10px 12px 10px 34px',
+        borderRadius: '8px',
+        border: '1px solid rgba(255,255,255,0.3)',
+        background: 'rgba(255,255,255,0.1)',
+        color: 'white',
+        fontSize: '15px',
+        outline: 'none'
     },
     mobileNavLink: {
         color: 'white',

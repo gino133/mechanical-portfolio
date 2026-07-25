@@ -1,4 +1,5 @@
 const Blog = require('../models/Blog');
+const removeDiacritics = require('../utils/removeDiacritics');
 
 const slugify = (text) =>
     text
@@ -24,7 +25,8 @@ const getBlogs = async (req, res) => {
         query.category = category;
     }
     if (search) {
-        query.title = { $regex: search, $options: 'i' };
+        // Diacritic-insensitive.
+        query.searchText = { $regex: removeDiacritics(search), $options: 'i' };
     }
 
     const posts = await Blog.find(query)
@@ -109,12 +111,16 @@ const updateBlog = async (req, res) => {
     }
 
     try {
-        const updates = { ...req.body };
-        if (updates.title && updates.title !== post.title && !req.body.slug) {
-            // keep the existing slug unless the admin explicitly changes it,
-            // to avoid breaking already-shared links every time the title
-            // is tweaked
-        }
+        // FIX: findByIdAndUpdate doesn't run the pre-save hook, so
+        // searchText must be recomputed by hand whenever title/excerpt
+        // change - otherwise search on edited posts goes stale.
+        const nextTitle = req.body.title !== undefined ? req.body.title : post.title;
+        const nextExcerpt = req.body.excerpt !== undefined ? req.body.excerpt : post.excerpt;
+        const updates = {
+            ...req.body,
+            searchText: removeDiacritics(`${nextTitle} ${nextExcerpt}`)
+        };
+
         const updated = await Blog.findByIdAndUpdate(req.params.id, updates, {
             new: true,
             runValidators: true

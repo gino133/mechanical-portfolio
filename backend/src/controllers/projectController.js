@@ -1,5 +1,6 @@
 const Project = require('../models/Project');
 const Category = require('../models/Category');
+const removeDiacritics = require('../utils/removeDiacritics');
 
 // @desc    Get all projects
 // @route   GET /api/v1/projects
@@ -11,6 +12,7 @@ const getProjects = async (req, res) => {
         const startIndex = (page - 1) * limit;
         const category = req.query.category;
         const year = req.query.year;
+        const search = req.query.search;
 
         let query = {};
 
@@ -25,10 +27,11 @@ const getProjects = async (req, res) => {
             query.year = year;
         }
 
-        // FIX: Query#sort() takes a single argument - a space-separated
-        // string or an object - not multiple string arguments. The extra
-        // "-createdAt" argument was silently ignored before, so results
-        // were only ever sorted by year.
+        if (search) {
+            // Diacritic-insensitive, matches name or client.
+            query.searchText = { $regex: removeDiacritics(search), $options: 'i' };
+        }
+
         const projects = await Project.find(query)
             .populate('category', 'name slug')
             .sort('-year -createdAt')
@@ -134,9 +137,18 @@ const updateProject = async (req, res) => {
             });
         }
 
+        // FIX: findByIdAndUpdate doesn't run the pre-save hook, so
+        // searchText must be recomputed by hand whenever name/client change.
+        const nextName = req.body.name !== undefined ? req.body.name : project.name;
+        const nextClient = req.body.client !== undefined ? req.body.client : project.client;
+        const updates = {
+            ...req.body,
+            searchText: removeDiacritics(`${nextName} ${nextClient}`)
+        };
+
         const updatedProject = await Project.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updates,
             { new: true, runValidators: true }
         );
 
