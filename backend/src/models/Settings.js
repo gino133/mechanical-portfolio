@@ -55,13 +55,13 @@ const settingsSchema = new mongoose.Schema({
     borderRadius: { type: String, default: '8px' },
 
     // SEO
-    siteTitle: { type: String, default: 'Portfolio - Kỹ sư Cơ khí & Điện' },
-    siteDescription: { type: String, default: 'Website portfolio cá nhân lĩnh vực Cơ khí và Điện' },
+    siteTitle: { type: String, default: 'Trần Cao Hải - Kỹ thuật Cơ khí & Điện' },
+    siteDescription: { type: String, default: 'Website cá nhân lĩnh vực Cơ khí, phụ kiện lưới điện trung hạ thế, thiết bị viễn thông, trụ đèn và thiết bị an toàn giao thông, Tủ điện công nghiệp và dân dụng' },
 
     // Hero section (trang chủ)
-    heroTitle: { type: String, default: 'Nguyễn Văn A' },
-    heroSubtitle: { type: String, default: 'Kỹ sư Cơ khí chế tạo & Tự động hóa' },
-    heroDescription: { type: String, default: 'Giải pháp kỹ thuật toàn diện cho ngành công nghiệp' },
+    heroTitle: { type: String, default: 'Trần Cao Hải' },
+    heroSubtitle: { type: String, default: 'Kỹ thuật Cơ khí chế tạo và Điện công nghiệp, dân dụng' },
+    heroDescription: { type: String, default: 'Giải pháp kỹ thuật toàn diện cho ngành Cơ khí & Điện' },
     heroImage: { type: String, default: '' },
 
     // Optional background image for the banner at the top of other pages
@@ -76,26 +76,26 @@ const settingsSchema = new mongoose.Schema({
     // Intro section (trang chủ)
     introText1: {
         type: String,
-        default: 'Tôi là kỹ sư cơ khí với hơn 10 năm kinh nghiệm trong lĩnh vực thiết kế, chế tạo và gia công cơ khí chính xác. Bên cạnh đó, tôi cũng có kiến thức sâu rộng về hệ thống điện công nghiệp và tự động hóa.'
+        default: 'Tôi là kỹ sư cơ khí với hơn 10 năm kinh nghiệm trong lĩnh vực tole, thép và phụ kiện lưới điện, viễn thông, thiết bị giao thông'
     },
     statYears: { type: String, default: '10+' },
     statYearsLabel: { type: String, default: 'Năm kinh nghiệm' },
     statProjects: { type: String, default: '50+' },
     statProjectsLabel: { type: String, default: 'Dự án hoàn thành' },
-    statClients: { type: String, default: '30+' },
+    statClients: { type: String, default: '200+' },
     statClientsLabel: { type: String, default: 'Khách hàng' },
 
     // About page
     aboutIntro1: {
         type: String,
-        default: 'Tôi là Nguyễn Văn A, kỹ sư cơ khí với hơn 10 năm kinh nghiệm trong lĩnh vực thiết kế, chế tạo và gia công cơ khí chính xác. Tốt nghiệp Đại học Bách khoa Hà Nội chuyên ngành Cơ khí chế tạo máy.'
+        default: 'Tôi là một Sale trong lĩnh vực cơ khí, điện. Tính đến nay, tôi đã có hơn 10 năm gắn bó với những thanh thép, cuộn tole và các loại thiết bị, vật tư phụ trợ cho ngành cơ khí - điện. Mười năm không phải là quá dài, nhưng đủ để tôi hiểu rõ từng thông số sản phẩm, nắm chắc tiêu chuẩn kỹ thuật và quan trọng nhất là hiểu được thấu đáo những gì mà công trình của anh chị đang thực sự cần.'
     },
     aboutIntro2: {
         type: String,
         default: 'Bên cạnh đó, tôi cũng có kiến thức sâu rộng về hệ thống điện công nghiệp và tự động hóa, giúp tôi có thể đưa ra các giải pháp toàn diện cho khách hàng.'
     },
     avatarImage: { type: String, default: 'https://via.placeholder.com/400x500?text=Avatar' },
-    education: { type: String, default: 'Đại học Bách khoa Hà Nội' },
+    education: { type: String, default: 'Đại học Công Nghiệp TP HCM' },
     skills: { type: [skillSchema], default: [
         { name: 'Thiết kế cơ khí', level: 90 },
         { name: 'SolidWorks / AutoCAD', level: 95 },
@@ -113,21 +113,21 @@ const settingsSchema = new mongoose.Schema({
     cvUrlEn: { type: String, default: '' },
 
     // Contact info (used site-wide: Footer, About, Contact page)
-    companyName: { type: String, default: 'Nguyễn Văn A' },
-    email: { type: String, default: 'nguyenvana@email.com' },
-    phone: { type: String, default: '0123 456 789' },
-    address: { type: String, default: 'Hà Nội, Việt Nam' },
-    workingHours: { type: String, default: 'Thứ 2 - Thứ 7: 8:00 - 17:30' },
+    companyName: { type: String, default: 'Trần Cao Hải' },
+    email: { type: String, default: 'hakirotomo@email.com' },
+    phone: { type: String, default: '0988 154 521' },
+    address: { type: String, default: 'Hồ Chí Minh, Việt Nam' },
+    workingHours: { type: String, default: 'Thứ 2 - Thứ 6: 8:00 - 16:30' },
 
     // Footer
     footerAboutTitle: { type: String, default: 'Về tôi' },
     footerAboutText: {
         type: String,
-        default: 'Kỹ sư Cơ khí & Điện với 10+ năm kinh nghiệm trong lĩnh vực chế tạo máy và tự động hóa.'
+        default: 'Kỹ sư Cơ khí & Điện với 10+ năm kinh nghiệm trong lĩnh vực cơ khí và điện.'
     },
     footerLinksTitle: { type: String, default: 'Liên kết nhanh' },
     footerContactTitle: { type: String, default: 'Thông tin liên hệ' },
-    copyrightText: { type: String, default: '© 2026 Nguyễn Văn A. All rights reserved.' },
+    copyrightText: { type: String, default: '© 2026 Trần Cao Hải. All rights reserved.' },
     footerLinks: { type: [footerLinkSchema], default: [
         { label: 'Sản phẩm', path: '/products' },
         { label: 'Dự án', path: '/projects' },
