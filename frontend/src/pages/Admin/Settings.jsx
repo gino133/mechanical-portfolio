@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
-import { FiPlus, FiTrash2 } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import ImageField from '../../components/common/ImageField';
 import RichTextEditor from '../../components/common/RichTextEditor';
 
@@ -81,6 +81,32 @@ const Settings = () => {
         setForm({ ...form, chatbotRules: (form.chatbotRules || []).filter((_, i) => i !== index) });
     };
 
+    const toggleSectionEnabled = (key) => {
+        const updated = (form.homeSections || []).map((s) =>
+            s.key === key ? { ...s, enabled: !s.enabled } : s
+        );
+        setForm({ ...form, homeSections: updated });
+    };
+
+    const moveSection = (key, direction) => {
+        const sections = [...(form.homeSections || [])].sort((a, b) => a.order - b.order);
+        const index = sections.findIndex((s) => s.key === key);
+        const swapWith = direction === 'up' ? index - 1 : index + 1;
+        if (swapWith < 0 || swapWith >= sections.length) return;
+
+        // Swap the "order" values of the two sections, then re-normalize
+        // to clean 1..N values.
+        const tempOrder = sections[index].order;
+        sections[index] = { ...sections[index], order: sections[swapWith].order };
+        sections[swapWith] = { ...sections[swapWith], order: tempOrder };
+
+        const renumbered = [...sections]
+            .sort((a, b) => a.order - b.order)
+            .map((s, i) => ({ ...s, order: i + 1 }));
+
+        setForm({ ...form, homeSections: renumbered });
+    };
+
     const handleSave = async () => {
         setSaving(true);
         setSaveMsg('');
@@ -93,6 +119,7 @@ const Settings = () => {
     const tabs = [
         { id: 'general', label: 'Tổng quan' },
         { id: 'colors', label: 'Màu sắc & Font' },
+        { id: 'layout', label: 'Bố cục trang chủ' },
         { id: 'hero', label: 'Trang chủ' },
         { id: 'about', label: 'Giới thiệu' },
         { id: 'contact', label: 'Thông tin liên hệ' },
@@ -209,6 +236,53 @@ const Settings = () => {
                         <div style={{ background: form.accentColor, padding: '20px', borderRadius: '8px', color: 'white', marginTop: '10px' }}>
                             <p>Màu nhấn</p>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Tab Layout - bố cục trang chủ */}
+            {activeTab === 'layout' && (
+                <div style={styles.tabContent}>
+                    <h3>Bố cục trang chủ</h3>
+                    <p style={styles.hint}>
+                        Bật/tắt và sắp xếp thứ tự các khối nội dung hiển thị trên trang chủ. Tắt 1 khối sẽ ẩn hoàn toàn khối đó khỏi trang chủ.
+                    </p>
+
+                    <div style={styles.sectionList}>
+                        {[...(form.homeSections || [])]
+                            .sort((a, b) => a.order - b.order)
+                            .map((section, index, arr) => (
+                                <div key={section.key} style={styles.sectionRow}>
+                                    <label style={styles.sectionCheckboxLabel}>
+                                        <input
+                                            type="checkbox"
+                                            checked={section.enabled}
+                                            onChange={() => toggleSectionEnabled(section.key)}
+                                        />
+                                        <span style={{ opacity: section.enabled ? 1 : 0.5 }}>{section.label}</span>
+                                    </label>
+                                    <div style={styles.sectionMoveBtns}>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveSection(section.key, 'up')}
+                                            disabled={index === 0}
+                                            style={styles.moveBtn}
+                                            title="Di chuyển lên"
+                                        >
+                                            <FiChevronUp />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => moveSection(section.key, 'down')}
+                                            disabled={index === arr.length - 1}
+                                            style={styles.moveBtn}
+                                            title="Di chuyển xuống"
+                                        >
+                                            <FiChevronDown />
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
                     </div>
                 </div>
             )}
@@ -604,6 +678,40 @@ const Settings = () => {
 };
 
 const styles = {
+    sectionList: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px'
+    },
+    sectionRow: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '12px 16px',
+        border: '1px solid #eee',
+        borderRadius: '8px',
+        background: '#fafbfc'
+    },
+    sectionCheckboxLabel: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px',
+        cursor: 'pointer'
+    },
+    sectionMoveBtns: {
+        display: 'flex',
+        gap: '4px'
+    },
+    moveBtn: {
+        background: 'white',
+        border: '1px solid #ddd',
+        borderRadius: '6px',
+        padding: '6px 8px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center'
+    },
     pageTitle: {
         marginBottom: '24px',
         fontSize: '24px'

@@ -92,7 +92,16 @@ const DEFAULT_SETTINGS = {
     chatbotName: 'Trợ lý AI',
     chatbotGreeting: 'Xin chào! Tôi là trợ lý AI. Tôi có thể giúp gì cho bạn hôm nay?',
     chatbotRules: [],
-    chatbotFallback: 'Cảm ơn bạn đã quan tâm! Bạn có thể xem thêm thông tin chi tiết tại các trang Sản phẩm, Dự án, hoặc để lại thông tin liên hệ để được tư vấn trực tiếp nhé!'
+    chatbotFallback: 'Cảm ơn bạn đã quan tâm! Bạn có thể xem thêm thông tin chi tiết tại các trang Sản phẩm, Dự án, hoặc để lại thông tin liên hệ để được tư vấn trực tiếp nhé!',
+
+    // Homepage section layout
+    homeSections: [
+        { key: 'hero', label: 'Banner đầu trang (Hero)', enabled: true, order: 1 },
+        { key: 'intro', label: 'Giới thiệu & Dịch vụ', enabled: true, order: 2 },
+        { key: 'products', label: 'Sản phẩm nổi bật', enabled: true, order: 3 },
+        { key: 'projects', label: 'Dự án nổi bật', enabled: true, order: 4 },
+        { key: 'blog', label: 'Bài viết Blog mới nhất', enabled: false, order: 5 }
+    ]
 };
 
 const DEFAULT_MENU = [
