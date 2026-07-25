@@ -3,6 +3,8 @@ import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
 import MultiImageField from '../../components/common/MultiImageField';
 import DocumentField from '../../components/common/DocumentField';
+import RichTextEditor from '../../components/common/RichTextEditor';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
 const emptyForm = {
     name: '',
@@ -12,8 +14,21 @@ const emptyForm = {
     description: '',
     gallery: [],
     documents: [],
-    technicalInfo: {},
+    techInfoList: [], // [{ key, value }] - converted to/from technicalInfo object
     isFeatured: false
+};
+
+const infoObjectToList = (info) => {
+    if (!info || typeof info !== 'object') return [];
+    return Object.entries(info).map(([key, value]) => ({ key, value: String(value) }));
+};
+
+const infoListToObject = (list) => {
+    const obj = {};
+    list.forEach(({ key, value }) => {
+        if (key.trim()) obj[key.trim()] = value;
+    });
+    return obj;
 };
 
 const ProjectsManager = () => {
@@ -51,6 +66,20 @@ const ProjectsManager = () => {
         }
     };
 
+    const handleInfoChange = (index, field, value) => {
+        const newList = [...formData.techInfoList];
+        newList[index] = { ...newList[index], [field]: value };
+        setFormData({ ...formData, techInfoList: newList });
+    };
+
+    const addInfo = () => {
+        setFormData({ ...formData, techInfoList: [...formData.techInfoList, { key: '', value: '' }] });
+    };
+
+    const removeInfo = (index) => {
+        setFormData({ ...formData, techInfoList: formData.techInfoList.filter((_, i) => i !== index) });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.category) {
@@ -72,7 +101,7 @@ const ProjectsManager = () => {
             thumbnail: formData.gallery[0],
             gallery: formData.gallery,
             documents: formData.documents.map((d) => d._id),
-            technicalInfo: formData.technicalInfo,
+            technicalInfo: infoListToObject(formData.techInfoList),
             isFeatured: formData.isFeatured
         };
 
@@ -111,7 +140,7 @@ const ProjectsManager = () => {
                 description: full.description,
                 gallery: full.gallery || [],
                 documents: full.documents || [],
-                technicalInfo: full.technicalInfo || {},
+                techInfoList: infoObjectToList(full.technicalInfo),
                 isFeatured: full.isFeatured || false
             });
             setShowForm(true);
@@ -190,19 +219,48 @@ const ProjectsManager = () => {
                                 required
                                 style={styles.input}
                             />
-                            <textarea
-                                placeholder="Mô tả dự án"
+
+                            <label style={styles.label}>Mô tả dự án</label>
+                            <RichTextEditor
                                 value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                required
-                                style={styles.textarea}
-                                rows="4"
+                                onChange={(description) => setFormData({ ...formData, description })}
+                                placeholder="Mô tả chi tiết dự án..."
+                                minHeight="160px"
                             />
-                            <MultiImageField
-                                label="Hình ảnh dự án (ảnh đầu tiên dùng làm thumbnail)"
-                                value={formData.gallery}
-                                onChange={(gallery) => setFormData({ ...formData, gallery })}
-                            />
+
+                            <label style={{ ...styles.label, marginTop: '20px' }}>Thông số kỹ thuật</label>
+                            {formData.techInfoList.map((info, index) => (
+                                <div key={index} style={styles.specRow}>
+                                    <input
+                                        type="text"
+                                        placeholder="Tên thông số (VD: Sức nâng)"
+                                        value={info.key}
+                                        onChange={(e) => handleInfoChange(index, 'key', e.target.value)}
+                                        style={{ ...styles.input, flex: 1, marginBottom: 0 }}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Giá trị (VD: 10 tấn)"
+                                        value={info.value}
+                                        onChange={(e) => handleInfoChange(index, 'value', e.target.value)}
+                                        style={{ ...styles.input, flex: 1, marginBottom: 0 }}
+                                    />
+                                    <button type="button" onClick={() => removeInfo(index)} style={styles.iconBtn}>
+                                        <FiTrash2 />
+                                    </button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={addInfo} style={styles.addSpecBtn}>
+                                <FiPlus /> Thêm thông số
+                            </button>
+
+                            <div style={{ marginTop: '20px' }}>
+                                <MultiImageField
+                                    label="Hình ảnh dự án (ảnh đầu tiên dùng làm thumbnail)"
+                                    value={formData.gallery}
+                                    onChange={(gallery) => setFormData({ ...formData, gallery })}
+                                />
+                            </div>
                             <DocumentField
                                 label="Tài liệu đính kèm (bản vẽ, thuyết minh...)"
                                 value={formData.documents}
@@ -268,11 +326,18 @@ const styles = {
     table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px' },
     editBtn: { background: '#ffc107', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' },
     deleteBtn: { background: '#dc3545', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' },
-    modal: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-    modalContent: { background: 'white', padding: '24px', borderRadius: '12px', width: '500px', maxWidth: '90%' },
+    modal: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '30px 20px', overflowY: 'auto' },
+    modalContent: { background: 'white', padding: '24px', borderRadius: '12px', width: '600px', maxWidth: '100%' },
+    label: { display: 'block', fontSize: '13px', color: '#555', marginBottom: '6px' },
     input: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px' },
-    textarea: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px' },
-    checkbox: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' },
+    specRow: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' },
+    iconBtn: { background: '#fee', color: '#c00', border: 'none', borderRadius: '6px', padding: '10px', cursor: 'pointer' },
+    addSpecBtn: {
+        display: 'flex', alignItems: 'center', gap: '6px', background: '#eef4fb',
+        color: '#1a3a5c', border: 'none', borderRadius: '6px', padding: '8px 14px',
+        cursor: 'pointer', fontSize: '13px', marginBottom: '8px'
+    },
+    checkbox: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', marginTop: '16px' },
     modalButtons: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
     saveBtn: { background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' },
     cancelBtn: { background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }

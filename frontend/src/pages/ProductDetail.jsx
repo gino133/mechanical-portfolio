@@ -102,7 +102,11 @@ const ProductDetail = () => {
 
                     <div style={styles.description}>
                         <h2>Mô tả sản phẩm</h2>
-                        <p>{product.description}</p>
+                        <div
+                            className="blog-content"
+                            onClick={(e) => { if (e.target.tagName === 'IMG') setLightboxImage(e.target.src); }}
+                            dangerouslySetInnerHTML={{ __html: product.description }}
+                        />
                     </div>
 
                     {product.documents && product.documents.length > 0 && (

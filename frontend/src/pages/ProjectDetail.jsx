@@ -47,7 +47,11 @@ const ProjectDetail = () => {
                 <div className="container">
                     <div style={styles.info}>
                         <h2>Thông tin dự án</h2>
-                        <p>{project.description}</p>
+                        <div
+                            className="blog-content"
+                            onClick={(e) => { if (e.target.tagName === 'IMG') setLightboxImage(e.target.src); }}
+                            dangerouslySetInnerHTML={{ __html: project.description }}
+                        />
 
                         {Object.keys(technicalInfo).length > 0 && (
                             <>

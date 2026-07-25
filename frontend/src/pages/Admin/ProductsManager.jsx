@@ -4,6 +4,8 @@ import { categoryAPI } from '../../services/api';
 import ImageField from '../../components/common/ImageField';
 import MultiImageField from '../../components/common/MultiImageField';
 import DocumentField from '../../components/common/DocumentField';
+import RichTextEditor from '../../components/common/RichTextEditor';
+import { FiPlus, FiTrash2 } from 'react-icons/fi';
 
 const emptyForm = {
     name: '',
@@ -12,7 +14,21 @@ const emptyForm = {
     description: '',
     images: [],
     documents: [],
+    specsList: [], // [{ key, value }] - converted to/from the specifications object
     isFeatured: false
+};
+
+const specsObjectToList = (specs) => {
+    if (!specs || typeof specs !== 'object') return [];
+    return Object.entries(specs).map(([key, value]) => ({ key, value: String(value) }));
+};
+
+const specsListToObject = (list) => {
+    const obj = {};
+    list.forEach(({ key, value }) => {
+        if (key.trim()) obj[key.trim()] = value;
+    });
+    return obj;
 };
 
 const ProductsManager = () => {
@@ -50,6 +66,20 @@ const ProductsManager = () => {
         }
     };
 
+    const handleSpecChange = (index, field, value) => {
+        const newSpecs = [...formData.specsList];
+        newSpecs[index] = { ...newSpecs[index], [field]: value };
+        setFormData({ ...formData, specsList: newSpecs });
+    };
+
+    const addSpec = () => {
+        setFormData({ ...formData, specsList: [...formData.specsList, { key: '', value: '' }] });
+    };
+
+    const removeSpec = (index) => {
+        setFormData({ ...formData, specsList: formData.specsList.filter((_, i) => i !== index) });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.category) {
@@ -70,6 +100,7 @@ const ProductsManager = () => {
             thumbnail: formData.images[0],
             images: formData.images,
             documents: formData.documents.map((d) => d._id),
+            specifications: specsListToObject(formData.specsList),
             isFeatured: formData.isFeatured
         };
 
@@ -109,6 +140,7 @@ const ProductsManager = () => {
                 description: full.description,
                 images: full.images || [],
                 documents: full.documents || [],
+                specsList: specsObjectToList(full.specifications),
                 isFeatured: full.isFeatured
             });
             setShowForm(true);
@@ -179,18 +211,48 @@ const ProductsManager = () => {
                                     <option key={cat._id} value={cat._id}>{cat.name}</option>
                                 ))}
                             </select>
-                            <textarea
-                                placeholder="Mô tả"
+
+                            <label style={styles.label}>Mô tả sản phẩm</label>
+                            <RichTextEditor
                                 value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                required
-                                style={styles.textarea}
+                                onChange={(description) => setFormData({ ...formData, description })}
+                                placeholder="Mô tả chi tiết sản phẩm..."
+                                minHeight="160px"
                             />
-                            <MultiImageField
-                                label="Hình ảnh sản phẩm"
-                                value={formData.images}
-                                onChange={(images) => setFormData({ ...formData, images })}
-                            />
+
+                            <label style={{ ...styles.label, marginTop: '20px' }}>Thông số kỹ thuật</label>
+                            {formData.specsList.map((spec, index) => (
+                                <div key={index} style={styles.specRow}>
+                                    <input
+                                        type="text"
+                                        placeholder="Tên thông số (VD: Vật liệu)"
+                                        value={spec.key}
+                                        onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
+                                        style={{ ...styles.input, flex: 1, marginBottom: 0 }}
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Giá trị (VD: Thép U160 mạ kẽm)"
+                                        value={spec.value}
+                                        onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
+                                        style={{ ...styles.input, flex: 1, marginBottom: 0 }}
+                                    />
+                                    <button type="button" onClick={() => removeSpec(index)} style={styles.iconBtn}>
+                                        <FiTrash2 />
+                                    </button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={addSpec} style={styles.addSpecBtn}>
+                                <FiPlus /> Thêm thông số
+                            </button>
+
+                            <div style={{ marginTop: '20px' }}>
+                                <MultiImageField
+                                    label="Hình ảnh sản phẩm"
+                                    value={formData.images}
+                                    onChange={(images) => setFormData({ ...formData, images })}
+                                />
+                            </div>
                             <DocumentField
                                 label="Tài liệu đính kèm (bản vẽ, thuyết minh...)"
                                 value={formData.documents}
@@ -300,20 +362,29 @@ const styles = {
         bottom: 0,
         background: 'rgba(0,0,0,0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        zIndex: 1000
+        zIndex: 1000,
+        padding: '30px 20px',
+        overflowY: 'auto'
     },
     modalContent: {
         background: 'white',
         padding: '24px',
         borderRadius: '12px',
-        width: '500px',
-        maxWidth: '90%'
+        width: '600px',
+        maxWidth: '100%'
     },
+    label: { display: 'block', fontSize: '13px', color: '#555', marginBottom: '6px' },
     input: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px' },
-    textarea: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px', minHeight: '80px' },
-    checkbox: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' },
+    specRow: { display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' },
+    iconBtn: { background: '#fee', color: '#c00', border: 'none', borderRadius: '6px', padding: '10px', cursor: 'pointer' },
+    addSpecBtn: {
+        display: 'flex', alignItems: 'center', gap: '6px', background: '#eef4fb',
+        color: '#1a3a5c', border: 'none', borderRadius: '6px', padding: '8px 14px',
+        cursor: 'pointer', fontSize: '13px', marginBottom: '8px'
+    },
+    checkbox: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', marginTop: '16px' },
     modalButtons: { display: 'flex', gap: '12px', justifyContent: 'flex-end' },
     saveBtn: { background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' },
     cancelBtn: { background: '#6c757d', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }
