@@ -7,6 +7,7 @@ const {
     getDocumentById,
     downloadDocument,
     uploadDocument,
+    updateDocument,
     deleteDocument
 } = require('../controllers/documentController');
 
@@ -18,6 +19,7 @@ router.get('/download/:id', downloadDocument);
 
 router.route('/:id')
     .get(getDocumentById)
+    .put(protect, admin, updateDocument)
     .delete(protect, admin, deleteDocument);
 
 module.exports = router;

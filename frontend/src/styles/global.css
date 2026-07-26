@@ -310,6 +310,20 @@ body {
     min-width: 640px;
 }
 
+/* Documents list: can get very long (hundreds of rows), so give it its own
+   fixed-height scroll area with a sticky header, instead of stretching
+   the whole admin page endlessly. */
+.admin-scroll-list {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.admin-scroll-list thead th {
+    position: sticky;
+    top: 0;
+    background: #f5f7fa;
+    z-index: 1;
+}
+
 /* Messages admin page: list + detail panel */
 .admin-messages-grid {
     display: grid;

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
-import { FiDownload, FiTrash2, FiCheck, FiFile } from 'react-icons/fi';
+import { FiDownload, FiTrash2, FiCheck, FiFile, FiEdit2, FiChevronUp, FiChevronDown, FiSearch } from 'react-icons/fi';
 
 const stripExtension = (fileName) => fileName.replace(/\.[^/.]+$/, '');
 
@@ -18,6 +18,19 @@ const DocumentsManager = () => {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
 
+    // Filter + sort state for the list below
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('all');
+    const [filterType, setFilterType] = useState('all');
+    const [sortField, setSortField] = useState('uploadedAt');
+    const [sortDir, setSortDir] = useState('desc');
+
+    // Edit modal (rename / re-categorize an existing document)
+    const [editingDoc, setEditingDoc] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [editCategory, setEditCategory] = useState('');
+    const [savingEdit, setSavingEdit] = useState(false);
+
     const token = localStorage.getItem('token');
 
     useEffect(() => {
@@ -27,7 +40,7 @@ const DocumentsManager = () => {
 
     const fetchDocuments = async () => {
         try {
-            const response = await api.get('/documents', { params: { limit: 200 } });
+            const response = await api.get('/documents', { params: { limit: 500 } });
             setDocuments(response.data.data);
         } catch (error) {
             console.error('Lỗi tải tài liệu:', error);
@@ -97,7 +110,6 @@ const DocumentsManager = () => {
         if (successCount === pendingFiles.length) {
             closeForm();
         } else {
-            // Keep failed ones staged so the admin can retry, drop the ones that succeeded
             setPendingFiles([]);
         }
     };
@@ -114,6 +126,91 @@ const DocumentsManager = () => {
             }
         }
     };
+
+    const openEdit = (doc) => {
+        setEditingDoc(doc);
+        setEditName(doc.name);
+        setEditCategory(doc.category?._id || '');
+    };
+
+    const handleSaveEdit = async () => {
+        if (!editName.trim()) {
+            alert('Tên tài liệu không được để trống.');
+            return;
+        }
+        setSavingEdit(true);
+        try {
+            await api.put(`/documents/${editingDoc._id}`, {
+                name: editName.trim(),
+                category: editCategory || undefined
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setEditingDoc(null);
+            fetchDocuments();
+        } catch (error) {
+            console.error('Lỗi sửa tài liệu:', error);
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setSavingEdit(false);
+        }
+    };
+
+    const toggleSort = (field) => {
+        if (sortField === field) {
+            setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDir('asc');
+        }
+    };
+
+    const fileTypes = useMemo(() => {
+        const types = new Set(documents.map((d) => d.fileType).filter(Boolean));
+        return Array.from(types).sort();
+    }, [documents]);
+
+    const displayedDocs = useMemo(() => {
+        let list = [...documents];
+
+        if (searchTerm.trim()) {
+            const term = searchTerm.trim().toLowerCase();
+            list = list.filter((d) => d.name.toLowerCase().includes(term));
+        }
+        if (filterCategory !== 'all') {
+            list = list.filter((d) =>
+                filterCategory === 'none' ? !d.category?._id : d.category?._id === filterCategory
+            );
+        }
+        if (filterType !== 'all') {
+            list = list.filter((d) => d.fileType === filterType);
+        }
+
+        list.sort((a, b) => {
+            let valA, valB;
+            switch (sortField) {
+                case 'name': valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); break;
+                case 'category': valA = a.category?.name || ''; valB = b.category?.name || ''; break;
+                case 'fileType': valA = a.fileType || ''; valB = b.fileType || ''; break;
+                case 'fileSize': valA = a.fileSize || 0; valB = b.fileSize || 0; break;
+                default: valA = new Date(a.uploadedAt).getTime(); valB = new Date(b.uploadedAt).getTime();
+            }
+            if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+            if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        return list;
+    }, [documents, searchTerm, filterCategory, filterType, sortField, sortDir]);
+
+    const SortHeader = ({ field, children }) => (
+        <th onClick={() => toggleSort(field)} style={styles.sortableTh}>
+            <span style={styles.sortHeaderContent}>
+                {children}
+                {sortField === field && (sortDir === 'asc' ? <FiChevronUp size={14} /> : <FiChevronDown size={14} />)}
+            </span>
+        </th>
+    );
 
     if (loading) return <div>Đang tải...</div>;
 
@@ -217,38 +314,105 @@ const DocumentsManager = () => {
                 </div>
             )}
 
-            <div className="admin-table-wrap">
-            <table style={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Tên tài liệu</th>
-                        <th>Danh mục</th>
-                        <th>Loại file</th>
-                        <th>Dung lượng</th>
-                        <th>Ngày upload</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {documents.map(doc => (
-                        <tr key={doc._id}>
-                            <td>{doc.name}</td>
-                            <td>{doc.category?.name || '—'}</td>
-                            <td>{doc.fileType?.toUpperCase() || 'N/A'}</td>
-                            <td>{doc.fileSize ? (doc.fileSize / 1024).toFixed(2) + ' KB' : 'N/A'}</td>
-                            <td>{new Date(doc.uploadedAt).toLocaleDateString('vi-VN')}</td>
-                            <td>
-                                <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.downloadBtn}>
-                                    <FiDownload />
-                                </a>
-                                <button onClick={() => handleDelete(doc._id)} style={styles.deleteBtn}>
-                                    <FiTrash2 />
-                                </button>
-                            </td>
-                        </tr>
+            {editingDoc && (
+                <div style={styles.modal}>
+                    <div style={{ ...styles.modalContent, width: '450px' }}>
+                        <h3>Sửa tài liệu</h3>
+                        <label style={styles.label}>Tên tài liệu</label>
+                        <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            style={styles.input}
+                        />
+                        <label style={styles.label}>Danh mục</label>
+                        <select
+                            value={editCategory}
+                            onChange={(e) => setEditCategory(e.target.value)}
+                            style={styles.input}
+                        >
+                            <option value="">-- Không thuộc mục nào --</option>
+                            {categories.map((cat) => (
+                                <option key={cat._id} value={cat._id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        <div style={styles.modalButtons}>
+                            <button onClick={handleSaveEdit} disabled={savingEdit} style={styles.saveBtn}>
+                                {savingEdit ? 'Đang lưu...' : 'Lưu thay đổi'}
+                            </button>
+                            <button type="button" onClick={() => setEditingDoc(null)} style={styles.cancelBtn}>Hủy</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Filters */}
+            <div style={styles.filterBar}>
+                <div style={styles.searchBox}>
+                    <FiSearch style={styles.searchIcon} />
+                    <input
+                        type="text"
+                        placeholder="Tìm theo tên tài liệu..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={styles.searchInput}
+                    />
+                </div>
+                <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)} style={styles.filterSelect}>
+                    <option value="all">Tất cả danh mục</option>
+                    <option value="none">Chưa phân loại</option>
+                    {categories.map((cat) => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
                     ))}
-                </tbody>
-            </table>
+                </select>
+                <select value={filterType} onChange={(e) => setFilterType(e.target.value)} style={styles.filterSelect}>
+                    <option value="all">Tất cả loại file</option>
+                    {fileTypes.map((type) => (
+                        <option key={type} value={type}>{type.toUpperCase()}</option>
+                    ))}
+                </select>
+                <span style={styles.resultCount}>{displayedDocs.length} / {documents.length} tài liệu</span>
+            </div>
+
+            {/* Scrollable list */}
+            <div className="admin-table-wrap admin-scroll-list">
+                <table style={styles.table}>
+                    <thead>
+                        <tr>
+                            <SortHeader field="name">Tên tài liệu</SortHeader>
+                            <SortHeader field="category">Danh mục</SortHeader>
+                            <SortHeader field="fileType">Loại file</SortHeader>
+                            <SortHeader field="fileSize">Dung lượng</SortHeader>
+                            <SortHeader field="uploadedAt">Ngày upload</SortHeader>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {displayedDocs.map(doc => (
+                            <tr key={doc._id}>
+                                <td>{doc.name}</td>
+                                <td>{doc.category?.name || '—'}</td>
+                                <td>{doc.fileType?.toUpperCase() || 'N/A'}</td>
+                                <td>{doc.fileSize ? (doc.fileSize / 1024).toFixed(2) + ' KB' : 'N/A'}</td>
+                                <td>{new Date(doc.uploadedAt).toLocaleDateString('vi-VN')}</td>
+                                <td>
+                                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.downloadBtn}>
+                                        <FiDownload />
+                                    </a>
+                                    <button onClick={() => openEdit(doc)} style={styles.editBtn}>
+                                        <FiEdit2 />
+                                    </button>
+                                    <button onClick={() => handleDelete(doc._id)} style={styles.deleteBtn}>
+                                        <FiTrash2 />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        {displayedDocs.length === 0 && (
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#999' }}>Không có tài liệu nào khớp bộ lọc</td></tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
@@ -258,8 +422,20 @@ const styles = {
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' },
     addBtn: { background: '#28a745', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' },
     warning: { background: '#fff3cd', color: '#856404', padding: '12px 16px', borderRadius: '6px', marginBottom: '16px' },
+    filterBar: {
+        display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center',
+        marginBottom: '16px', background: 'white', padding: '12px', borderRadius: '8px'
+    },
+    searchBox: { position: 'relative', flex: '1 1 220px' },
+    searchIcon: { position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#999' },
+    searchInput: { width: '100%', padding: '9px 10px 9px 32px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' },
+    filterSelect: { padding: '9px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', background: 'white' },
+    resultCount: { fontSize: '13px', color: '#888', marginLeft: 'auto' },
     table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px' },
-    downloadBtn: { background: '#17a2b8', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '8px', display: 'inline-block' },
+    sortableTh: { cursor: 'pointer', userSelect: 'none' },
+    sortHeaderContent: { display: 'inline-flex', alignItems: 'center', gap: '4px' },
+    downloadBtn: { background: '#17a2b8', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '6px', display: 'inline-block' },
+    editBtn: { background: '#ffc107', color: '#333', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '6px' },
     deleteBtn: { background: '#dc3545', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' },
     modal: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '30px 20px', overflowY: 'auto' },
     modalContent: { background: 'white', padding: '24px', borderRadius: '12px', width: '550px', maxWidth: '100%' },
