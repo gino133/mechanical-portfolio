@@ -83,7 +83,7 @@ const Documents = () => {
 
     if (loading) return <div className="spinner"></div>;
 
-    const columnCount = Math.max(1, Math.min(4, columns.length));
+    const columnCount = Math.max(1, Math.min(5, columns.length));
 
     return (
         <div>
