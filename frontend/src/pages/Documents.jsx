@@ -82,7 +82,7 @@ const Documents = () => {
 
     if (loading) return <div className="spinner"></div>;
 
-    const columnCount = Math.max(1, Math.min(5, columns.length));
+    const columnCount = Math.max(1, Math.min(4, columns.length));
 
     return (
         <div>
@@ -125,7 +125,7 @@ const Documents = () => {
                                         {col.docs.length === 0 && (
                                             <p style={styles.emptyCol}>Không có tài liệu</p>
                                         )}
-                                        {col.docs.slice(0, 5).map(doc => (
+                                        {col.docs.slice(0, 2).map(doc => (
                                             <div key={doc._id} style={styles.docCard}>
                                                 <div style={styles.docIcon}><FiFile /></div>
                                                 <div style={styles.docInfo}>
@@ -148,7 +148,7 @@ const Documents = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                        {col.docs.length > 5 && (
+                                        {col.docs.length > 2 && (
                                             <Link to={`/documents/category/${col.id}`} style={styles.viewAllLink}>
                                                 Xem tất cả {col.docs.length} tài liệu →
                                             </Link>
