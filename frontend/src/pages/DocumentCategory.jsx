@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiDownload, FiEye, FiFile, FiSearch, FiArrowLeft } from 'react-icons/fi';
 import { documentAPI, categoryAPI } from '../services/api';
+import { removeDiacritics } from '../utils/removeDiacritics';
 
 const UNCATEGORIZED_KEY = '__uncategorized__';
 
@@ -44,8 +45,8 @@ const DocumentCategory = () => {
 
     const filteredDocs = useMemo(() => {
         if (!searchTerm) return documents;
-        const term = searchTerm.toLowerCase();
-        return documents.filter((d) => d.name.toLowerCase().includes(term));
+        const term = removeDiacritics(searchTerm);
+        return documents.filter((d) => removeDiacritics(d.name).includes(term));
     }, [documents, searchTerm]);
 
     const handleView = (doc) => {
