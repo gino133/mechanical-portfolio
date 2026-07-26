@@ -4,6 +4,7 @@ import { FiSearch, FiDownload, FiEye, FiFile } from 'react-icons/fi';
 import { documentAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
+import { removeDiacritics } from '../utils/removeDiacritics';
 
 const UNCATEGORIZED_KEY = '__uncategorized__';
 
@@ -36,13 +37,13 @@ const Documents = () => {
 
     const filteredDocs = useMemo(() => {
         if (!searchTerm) return documents;
-        const term = searchTerm.toLowerCase();
-        return documents.filter(d => d.name.toLowerCase().includes(term));
+        const term = removeDiacritics(searchTerm);
+        return documents.filter(d => removeDiacritics(d.name).includes(term));
     }, [documents, searchTerm]);
 
     // Group documents into columns: one column per category (in the admin-
     // defined order) plus a trailing "Chưa phân loại" column for documents
-    // uploaded without a category. Split into a max of 5 columns per row -
+    // uploaded without a category. Split into a max of 2 columns per row -
     // CSS Grid auto-wraps extra columns onto new rows.
     const columns = useMemo(() => {
         const byCategory = {};
