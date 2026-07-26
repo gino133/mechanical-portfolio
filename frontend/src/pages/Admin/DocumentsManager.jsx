@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../services/api';
 import { categoryAPI } from '../../services/api';
+import { removeDiacritics } from '../../utils/removeDiacritics';
 import { FiDownload, FiTrash2, FiCheck, FiFile, FiEdit2, FiChevronUp, FiChevronDown, FiSearch } from 'react-icons/fi';
 
 const stripExtension = (fileName) => fileName.replace(/\.[^/.]+$/, '');
@@ -174,8 +175,8 @@ const DocumentsManager = () => {
         let list = [...documents];
 
         if (searchTerm.trim()) {
-            const term = searchTerm.trim().toLowerCase();
-            list = list.filter((d) => d.name.toLowerCase().includes(term));
+            const term = removeDiacritics(searchTerm.trim());
+            list = list.filter((d) => removeDiacritics(d.name).includes(term));
         }
         if (filterCategory !== 'all') {
             list = list.filter((d) =>
