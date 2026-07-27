@@ -48,16 +48,22 @@ const storage = new CloudinaryStorage({
 });
 
 // File filter
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|pdf|dwg|dxf|docx|xlsx/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+// FIX: the old check required BOTH extension AND mimetype to match the
+// same regex - but Office files report long, unrelated MIME strings (e.g.
+// .docx is "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+// which doesn't contain "docx" anywhere), so real Word/Excel/PowerPoint
+// files always failed the mimetype half of the check and got rejected.
+// Browsers are also inconsistent about MIME types for CAD files (.dwg/.dxf
+// often show up as "application/octet-stream"). Checking the file
+// extension alone is more reliable here and is standard practice for
+// document upload validation.
+const allowedExtensions = /\.(jpe?g|png|gif|pdf|dwg|dxf|docx?|xlsx?|pptx?)$/i;
 
-    if (mimetype && extname) {
+const fileFilter = (req, file, cb) => {
+    if (allowedExtensions.test(file.originalname)) {
         return cb(null, true);
-    } else {
-        cb(new Error('Only images, PDFs, DWG, and Office documents are allowed'));
     }
+    cb(new Error('Only images, PDF, DWG/DXF, and Microsoft Office documents (Word, Excel, PowerPoint) are allowed'));
 };
 
 const upload = multer({
