@@ -145,6 +145,24 @@ export const documentAPI = {
         return api.get(`/documents${query ? `?${query}` : ''}`);
     },
     
+    // Fetch the FULL document set by looping through the backend's
+    // pagination, instead of relying on a single request with a fixed
+    // limit (e.g. limit: 500), which silently drops anything past that
+    // limit once the total document count grows beyond it.
+    getAllUnpaginated: async (extraParams = {}) => {
+        const pageSize = 200;
+        let page = 1;
+        let totalPages = 1;
+        let all = [];
+        do {
+            const res = await documentAPI.getAll({ ...extraParams, page, limit: pageSize });
+            all = all.concat(res.data.data);
+            totalPages = res.data.pagination?.pages || 1;
+            page += 1;
+        } while (page <= totalPages);
+        return all;
+    },
+
     // Get single document by ID
     getById: (id) => api.get(`/documents/${id}`),
     
