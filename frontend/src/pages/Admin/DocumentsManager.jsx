@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../services/api';
-import { categoryAPI } from '../../services/api';
+import { categoryAPI, documentAPI } from '../../services/api';
 import { removeDiacritics } from '../../utils/removeDiacritics';
 import { FiDownload, FiTrash2, FiCheck, FiFile, FiEdit2, FiChevronUp, FiChevronDown, FiSearch } from 'react-icons/fi';
 
@@ -41,8 +41,8 @@ const DocumentsManager = () => {
 
     const fetchDocuments = async () => {
         try {
-            const response = await api.get('/documents', { params: { limit: 500 } });
-            setDocuments(response.data.data);
+            const allDocs = await documentAPI.getAllUnpaginated();
+            setDocuments(allDocs);
         } catch (error) {
             console.error('Lỗi tải tài liệu:', error);
         } finally {
