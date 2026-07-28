@@ -20,12 +20,11 @@ const DocumentCategory = () => {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [docsRes, catsRes] = await Promise.all([
-                documentAPI.getAll({ limit: 500 }),
+            const [allDocs, catsRes] = await Promise.all([
+                documentAPI.getAllUnpaginated(),
                 categoryAPI.getByType('document')
             ]);
 
-            const allDocs = docsRes.data.data;
             const categories = catsRes.data.data;
 
             if (categoryId === UNCATEGORIZED_KEY) {
