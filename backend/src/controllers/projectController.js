@@ -36,7 +36,8 @@ const getProjects = async (req, res) => {
             .populate('category', 'name slug')
             .sort('-year -createdAt')
             .limit(limit)
-            .skip(startIndex);
+            .skip(startIndex)
+            .lean();
 
         const total = await Project.countDocuments(query);
 
@@ -64,7 +65,8 @@ const getFeaturedProjects = async (req, res) => {
         const projects = await Project.find({ isFeatured: true })
             .populate('category', 'name slug')
             .sort('-createdAt')
-            .limit(6);
+            .limit(6)
+            .lean();
 
         res.json({
             success: true,

@@ -68,4 +68,10 @@ productSchema.pre('save', function(next) {
     next();
 });
 
+// Matches productController's list query (category filter + isFeatured
+// filter, always sorted by -createdAt) and search filter.
+productSchema.index({ category: 1, createdAt: -1 });
+productSchema.index({ isFeatured: 1, createdAt: -1 });
+productSchema.index({ searchText: 1 });
+
 module.exports = mongoose.model('Product', productSchema);

@@ -44,7 +44,8 @@ const getMedia = async (req, res) => {
     const media = await Media.find()
         .sort('-uploadedAt')
         .limit(limit)
-        .skip(startIndex);
+        .skip(startIndex)
+        .lean();
 
     const total = await Media.countDocuments();
 

@@ -66,4 +66,12 @@ documentSchema.pre('save', function(next) {
     next();
 });
 
+// getDocuments() filters by category and/or searchText, and always sorts
+// by -uploadedAt. Without these indexes Mongo does a full collection scan
+// (+ in-memory sort) on every list request, which gets slower as the
+// document count grows.
+documentSchema.index({ uploadedAt: -1 });
+documentSchema.index({ category: 1, uploadedAt: -1 });
+documentSchema.index({ searchText: 1 });
+
 module.exports = mongoose.model('Document', documentSchema);

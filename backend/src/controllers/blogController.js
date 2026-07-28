@@ -34,7 +34,8 @@ const getBlogs = async (req, res) => {
         .sort('-createdAt')
         .limit(limit)
         .skip(startIndex)
-        .select('-content'); // listing doesn't need full HTML content
+        .select('-content') // listing doesn't need full HTML content
+        .lean();
 
     const total = await Blog.countDocuments(query);
 
@@ -52,7 +53,8 @@ const getBlogsAdmin = async (req, res) => {
     const posts = await Blog.find()
         .populate('category', 'name slug')
         .sort('-createdAt')
-        .select('-content');
+        .select('-content')
+        .lean();
 
     res.json({ success: true, data: posts });
 };

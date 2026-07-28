@@ -25,4 +25,6 @@ const mediaSchema = new mongoose.Schema({
     }
 });
 
+mediaSchema.index({ uploadedAt: -1 });
+
 module.exports = mongoose.model('Media', mediaSchema);

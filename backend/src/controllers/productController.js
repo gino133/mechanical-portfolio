@@ -33,7 +33,8 @@ const getProducts = async (req, res) => {
             .populate('category', 'name slug')
             .sort('-createdAt')
             .limit(limit)
-            .skip(startIndex);
+            .skip(startIndex)
+            .lean();
 
         const total = await Product.countDocuments(query);
 
@@ -61,7 +62,8 @@ const getFeaturedProducts = async (req, res) => {
         const products = await Product.find({ isFeatured: true })
             .populate('category', 'name slug')
             .limit(6)
-            .sort('-createdAt');
+            .sort('-createdAt')
+            .lean();
 
         res.json({
             success: true,

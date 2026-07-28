@@ -28,7 +28,8 @@ const getDocuments = async (req, res) => {
             .populate('category', 'name slug')
             .sort('-uploadedAt')
             .limit(limit)
-            .skip(startIndex);
+            .skip(startIndex)
+            .lean();
 
         const total = await Document.countDocuments(query);
 

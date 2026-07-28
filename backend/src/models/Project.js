@@ -77,4 +77,10 @@ projectSchema.pre('save', function(next) {
     next();
 });
 
+// Matches projectController's list query (category filter + isFeatured
+// filter, sorted by -year -createdAt) and search filter.
+projectSchema.index({ category: 1, year: -1, createdAt: -1 });
+projectSchema.index({ isFeatured: 1, createdAt: -1 });
+projectSchema.index({ searchText: 1 });
+
 module.exports = mongoose.model('Project', projectSchema);

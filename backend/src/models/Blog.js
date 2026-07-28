@@ -63,4 +63,9 @@ blogSchema.pre('save', function (next) {
     next();
 });
 
+// Matches blogController's list query (isPublished + category filter,
+// sorted by -createdAt) and search filter.
+blogSchema.index({ isPublished: 1, category: 1, createdAt: -1 });
+blogSchema.index({ searchText: 1 });
+
 module.exports = mongoose.model('Blog', blogSchema);
