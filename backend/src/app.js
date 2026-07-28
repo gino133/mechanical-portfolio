@@ -21,7 +21,13 @@ const app = express();
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    // Was 100 - too low for a real admin session: with 1000+ documents,
+    // just loading the document list now takes several paginated GET
+    // requests, on top of categories/products/images/etc. Hitting this
+    // ceiling made GET /documents return 429 right after bulk uploads,
+    // which the frontend logged silently and looked like old documents
+    // had disappeared.
+    max: 500,
     message: 'Too many requests from this IP, please try again later.'
 });
 
