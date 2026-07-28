@@ -22,11 +22,11 @@ const Documents = () => {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [docsRes, catsRes] = await Promise.all([
-                documentAPI.getAll({ limit: 500 }),
+            const [allDocs, catsRes] = await Promise.all([
+                documentAPI.getAllUnpaginated(),
                 categoryAPI.getByType('document')
             ]);
-            setDocuments(docsRes.data.data);
+            setDocuments(allDocs);
             setCategories(catsRes.data.data);
         } catch (error) {
             console.error('Lỗi tải tài liệu:', error);
