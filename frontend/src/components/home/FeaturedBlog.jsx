@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogAPI } from '../../services/api';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, '').trim();
 
@@ -28,7 +29,7 @@ const FeaturedBlog = () => {
                     {posts.map(post => (
                         <Link key={post._id} to={`/blog/${post.slug}`} className="card" style={styles.cardLink}>
                             {post.coverImage && (
-                                <img src={post.coverImage} alt={post.title} className="card-image" />
+                                <img src={optimizeImage(post.coverImage, 400)} alt={post.title} className="card-image" loading="lazy" />
                             )}
                             <div className="card-content">
                                 {post.category?.name && <span className="card-category">{post.category.name}</span>}

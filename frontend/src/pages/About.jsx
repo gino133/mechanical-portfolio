@@ -3,6 +3,7 @@ import { GiGraduateCap, GiTrophy } from 'react-icons/gi';
 import { useSettings } from '../contexts/SettingsContext';
 import ImageLightbox from '../components/common/ImageLightbox';
 import { heroBackgroundStyle } from '../utils/heroBackground';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const About = () => {
     const { settings } = useSettings();
@@ -27,7 +28,7 @@ const About = () => {
                     <div className="about-grid">
                         <div>
                             <img
-                                src={settings.avatarImage}
+                                src={optimizeImage(settings.avatarImage, 500)}
                                 alt="Profile"
                                 style={{ ...styles.avatar, cursor: 'zoom-in' }}
                                 onClick={() => setLightboxImage(settings.avatarImage)}

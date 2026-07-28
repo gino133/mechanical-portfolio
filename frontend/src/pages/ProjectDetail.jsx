@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FiDownload } from 'react-icons/fi';
 import { projectAPI } from '../services/api';
 import ImageLightbox from '../components/common/ImageLightbox';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const ProjectDetail = () => {
     const { id } = useParams();
@@ -77,10 +78,11 @@ const ProjectDetail = () => {
                             {gallery.map((img, index) => (
                                 <img
                                     key={index}
-                                    src={img}
+                                    src={optimizeImage(img, 400)}
                                     alt={`Hình ${index + 1}`}
                                     style={styles.galleryImg}
                                     onClick={() => setLightboxImage(img)}
+                                    loading="lazy"
                                 />
                             ))}
                         </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiMenu, FiX, FiSearch } from 'react-icons/fi';
 import { useSettings } from '../../contexts/SettingsContext';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -51,7 +52,7 @@ const Header = () => {
                 {/* Logo */}
                 <Link to="/" style={styles.logo}>
                     {settings.logoImage ? (
-                        <img src={settings.logoImage} alt="Logo" style={styles.logoImg} />
+                        <img src={optimizeImage(settings.logoImage, 300)} alt="Logo" style={styles.logoImg} />
                     ) : (
                         <span style={styles.logoText}>{settings.logoText}</span>
                     )}

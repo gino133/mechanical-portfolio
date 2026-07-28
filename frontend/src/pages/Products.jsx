@@ -4,6 +4,7 @@ import { FiSearch } from 'react-icons/fi';
 import { productAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const Products = () => {
     const { settings } = useSettings();
@@ -99,7 +100,7 @@ const Products = () => {
                         <div className="grid grid-3">
                             {products.map(product => (
                                 <div key={product._id} className="card">
-                                    <img src={product.thumbnail} alt={product.name} className="card-image" />
+                                    <img src={optimizeImage(product.thumbnail, 400)} alt={product.name} className="card-image" loading="lazy" />
                                     <div className="card-content">
                                         <span className="card-category">{product.category?.name}</span>
                                         <h3 className="card-title">{product.name}</h3>

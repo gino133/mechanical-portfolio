@@ -4,6 +4,7 @@ import { FiDownload, FiMail, FiPhone } from 'react-icons/fi';
 import { productAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import ImageLightbox from '../components/common/ImageLightbox';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -55,7 +56,7 @@ const ProductDetail = () => {
                         <div>
                             {/* Main image - click to open the popup preview */}
                             <img
-                                src={selectedImage}
+                                src={optimizeImage(selectedImage, 900)}
                                 alt={product.name}
                                 style={styles.mainImage}
                                 onClick={() => setLightboxImage(selectedImage)}
@@ -68,10 +69,11 @@ const ProductDetail = () => {
                                     {images.map((img, index) => (
                                         <img
                                             key={index}
-                                            src={img}
+                                            src={optimizeImage(img, 150)}
                                             alt={`${product.name} ${index + 1}`}
                                             onMouseEnter={() => setSelectedImage(img)}
                                             onClick={() => setSelectedImage(img)}
+                                            loading="lazy"
                                             style={{
                                                 ...styles.thumb,
                                                 ...(selectedImage === img ? styles.thumbActive : {})

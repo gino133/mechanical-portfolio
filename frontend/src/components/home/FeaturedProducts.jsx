@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../../services/api';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const FeaturedProducts = () => {
     const [products, setProducts] = useState([]);
@@ -56,7 +57,7 @@ const FeaturedProducts = () => {
                     <div className="grid grid-4">
                         {products.map(product => (
                             <div key={product._id} className="card">
-                                <img src={product.thumbnail} alt={product.name} className="card-image" />
+                                <img src={optimizeImage(product.thumbnail, 400)} alt={product.name} className="card-image" loading="lazy" />
                                 <div className="card-content">
                                     <span className="card-category">{product.category?.name}</span>
                                     <h3 className="card-title">{product.name}</h3>

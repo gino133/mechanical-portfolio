@@ -1,38 +1,41 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { SettingsProvider } from './contexts/SettingsContext';
 import Header from './components/common/Header';
 import Footer from './components/common/Footer';
 import Chatbot from './components/Chatbot';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 
-// Public pages
-import Home from './pages/Home';
-import About from './pages/About';
-import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
-import Projects from './pages/Projects';
-import ProjectDetail from './pages/ProjectDetail';
-import Documents from './pages/Documents';
-import DocumentCategory from './pages/DocumentCategory';
-import Blog from './pages/Blog';
-import BlogDetail from './pages/BlogDetail';
-import ServiceDetail from './pages/ServiceDetail';
-import Contact from './pages/Contact';
-import SearchResults from './pages/SearchResults';
+// Public pages - lazy-loaded so a visitor to the public site never
+// downloads the (much heavier) admin bundle.
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Products = lazy(() => import('./pages/Products'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Projects = lazy(() => import('./pages/Projects'));
+const ProjectDetail = lazy(() => import('./pages/ProjectDetail'));
+const Documents = lazy(() => import('./pages/Documents'));
+const DocumentCategory = lazy(() => import('./pages/DocumentCategory'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogDetail = lazy(() => import('./pages/BlogDetail'));
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'));
+const Contact = lazy(() => import('./pages/Contact'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
 
-// Admin pages
-import AdminLogin from './pages/Admin/Login';
-import AdminDashboard from './pages/Admin/Dashboard';
-import Settings from './pages/Admin/Settings';
-import MenuManager from './pages/Admin/MenuManager';
-import PagesManager from './pages/Admin/PagesManager';
-import ProductsManager from './pages/Admin/ProductsManager';
-import ProjectsManager from './pages/Admin/ProjectsManager';
-import DocumentsManager from './pages/Admin/DocumentsManager';
-import CategoriesManager from './pages/Admin/CategoriesManager';
-import BlogManager from './pages/Admin/BlogManager';
-import ServicesManager from './pages/Admin/ServicesManager';
-import MessagesManager from './pages/Admin/MessagesManager';
+// Admin pages - lazy-loaded into their own chunk(s), only fetched when
+// someone actually navigates to /admin/*.
+const AdminLogin = lazy(() => import('./pages/Admin/Login'));
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const Settings = lazy(() => import('./pages/Admin/Settings'));
+const MenuManager = lazy(() => import('./pages/Admin/MenuManager'));
+const PagesManager = lazy(() => import('./pages/Admin/PagesManager'));
+const ProductsManager = lazy(() => import('./pages/Admin/ProductsManager'));
+const ProjectsManager = lazy(() => import('./pages/Admin/ProjectsManager'));
+const DocumentsManager = lazy(() => import('./pages/Admin/DocumentsManager'));
+const CategoriesManager = lazy(() => import('./pages/Admin/CategoriesManager'));
+const BlogManager = lazy(() => import('./pages/Admin/BlogManager'));
+const ServicesManager = lazy(() => import('./pages/Admin/ServicesManager'));
+const MessagesManager = lazy(() => import('./pages/Admin/MessagesManager'));
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -62,6 +65,7 @@ function App() {
                 <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
                     <Header />
                     <main style={{ flex: 1 }}>
+                        <Suspense fallback={<LoadingSpinner fullScreen />}>
                         <Routes>
                             {/* Public Routes */}
                             <Route path="/" element={<Home />} />
@@ -127,6 +131,7 @@ function App() {
                             {/* 404 - Not Found */}
                             <Route path="*" element={<NotFound />} />
                         </Routes>
+                        </Suspense>
                     </main>
                     <Footer />
                     <Chatbot />

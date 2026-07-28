@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { mediaAPI } from '../../services/api';
 import { FiUpload, FiX, FiTrash2, FiCheck } from 'react-icons/fi';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const stripExtension = (fileName) => fileName.replace(/\.[^/.]+$/, '');
 
@@ -223,7 +224,7 @@ const MediaLibraryModal = ({ onSelect, onClose }) => {
                         <div style={styles.grid}>
                             {items.map((item) => (
                                 <div key={item._id} style={styles.item} onClick={() => onSelect([item.url])} title={item.fileName}>
-                                    <img src={item.url} alt={item.fileName} style={styles.itemImg} />
+                                    <img src={optimizeImage(item.url, 200)} alt={item.fileName} style={styles.itemImg} loading="lazy" />
                                     <button style={styles.itemDelete} onClick={(e) => handleDeleteFromLibrary(e, item._id)} title="Xoá khỏi thư viện">
                                         <FiTrash2 size={13} />
                                     </button>

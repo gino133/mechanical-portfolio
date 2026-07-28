@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { blogAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const stripHtml = (html) => html.replace(/<[^>]*>/g, '').trim();
 
@@ -96,7 +97,7 @@ const Blog = () => {
                             {posts.map(post => (
                                 <Link key={post._id} to={`/blog/${post.slug}`} className="card" style={styles.cardLink}>
                                     {post.coverImage && (
-                                        <img src={post.coverImage} alt={post.title} className="card-image" />
+                                        <img src={optimizeImage(post.coverImage, 400)} alt={post.title} className="card-image" loading="lazy" />
                                     )}
                                     <div className="card-content">
                                         {post.category?.name && <span className="card-category">{post.category.name}</span>}

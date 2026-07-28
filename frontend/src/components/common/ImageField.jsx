@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiImage, FiX } from 'react-icons/fi';
 import MediaLibraryModal from './MediaLibraryModal';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 /**
  * Props:
@@ -22,7 +23,7 @@ const ImageField = ({ value, onChange, label }) => {
             <div style={styles.row}>
                 <div style={styles.preview} onClick={() => setShowModal(true)}>
                     {value ? (
-                        <img src={value} alt="preview" style={styles.previewImg} />
+                        <img src={optimizeImage(value, 150)} alt="preview" style={styles.previewImg} />
                     ) : (
                         <FiImage size={24} color="#bbb" />
                     )}

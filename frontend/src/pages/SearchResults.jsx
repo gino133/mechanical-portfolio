@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { productAPI, projectAPI, documentAPI, blogAPI } from '../services/api';
 import { FiFile, FiSearch } from 'react-icons/fi';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const SearchResults = () => {
     const [searchParams] = useSearchParams();
@@ -70,7 +71,7 @@ const SearchResults = () => {
                             <div className="grid grid-3">
                                 {results.products.map(item => (
                                     <Link key={item._id} to={`/products/${item._id}`} className="card" style={styles.cardLink}>
-                                        <img src={item.thumbnail} alt={item.name} className="card-image" />
+                                        <img src={optimizeImage(item.thumbnail, 400)} alt={item.name} className="card-image" loading="lazy" />
                                         <div className="card-content">
                                             <h3 className="card-title">{item.name}</h3>
                                             <p>Mã: {item.code}</p>
@@ -87,7 +88,7 @@ const SearchResults = () => {
                             <div className="grid grid-3">
                                 {results.projects.map(item => (
                                     <Link key={item._id} to={`/projects/${item._id}`} className="card" style={styles.cardLink}>
-                                        <img src={item.thumbnail} alt={item.name} className="card-image" />
+                                        <img src={optimizeImage(item.thumbnail, 400)} alt={item.name} className="card-image" loading="lazy" />
                                         <div className="card-content">
                                             <h3 className="card-title">{item.name}</h3>
                                             <p>Khách hàng: {item.client}</p>
@@ -104,7 +105,7 @@ const SearchResults = () => {
                             <div className="grid grid-3">
                                 {results.blog.map(item => (
                                     <Link key={item._id} to={`/blog/${item.slug}`} className="card" style={styles.cardLink}>
-                                        {item.coverImage && <img src={item.coverImage} alt={item.title} className="card-image" />}
+                                        {item.coverImage && <img src={optimizeImage(item.coverImage, 400)} alt={item.title} className="card-image" loading="lazy" />}
                                         <div className="card-content">
                                             <h3 className="card-title">{item.title}</h3>
                                         </div>

@@ -1,3 +1,5 @@
+import { optimizeImage } from './optimizeImage';
+
 /**
  * Returns extra inline style props to layer a background image (with a
  * dark gradient overlay for text readability) under a page's hero banner.
@@ -7,7 +9,7 @@
 export const heroBackgroundStyle = (imageUrl) => {
     if (!imageUrl) return {};
     return {
-        backgroundImage: `linear-gradient(rgba(26,58,92,0.78), rgba(44,90,122,0.78)), url(${imageUrl})`,
+        backgroundImage: `linear-gradient(rgba(26,58,92,0.78), rgba(44,90,122,0.78)), url(${optimizeImage(imageUrl, 1600)})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
     };

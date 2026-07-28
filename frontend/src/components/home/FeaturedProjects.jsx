@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { projectAPI } from '../../services/api';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const FeaturedProjects = () => {
     const [projects, setProjects] = useState([]);
@@ -56,7 +57,7 @@ const FeaturedProjects = () => {
                     <div className="grid grid-3">
                         {projects.map(project => (
                             <div key={project._id} className="card">
-                                <img src={project.thumbnail} alt={project.name} className="card-image" />
+                                <img src={optimizeImage(project.thumbnail, 400)} alt={project.name} className="card-image" loading="lazy" />
                                 <div className="card-content">
                                     <span className="card-category">{project.category?.name}</span>
                                     <h3 className="card-title">{project.name}</h3>

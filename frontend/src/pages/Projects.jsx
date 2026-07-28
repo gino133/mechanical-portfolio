@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { projectAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const Projects = () => {
     const { settings } = useSettings();
@@ -79,7 +80,7 @@ const Projects = () => {
                         <div className="grid grid-2">
                             {projects.map(project => (
                                 <div key={project._id} className="card">
-                                    <img src={project.thumbnail} alt={project.name} className="card-image" />
+                                    <img src={optimizeImage(project.thumbnail, 400)} alt={project.name} className="card-image" loading="lazy" />
                                     <div className="card-content">
                                         <span className="card-category">{project.category?.name}</span>
                                         <h3 className="card-title">{project.name}</h3>

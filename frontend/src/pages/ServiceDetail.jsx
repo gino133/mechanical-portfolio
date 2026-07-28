@@ -4,6 +4,7 @@ import { serviceAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import ImageLightbox from '../components/common/ImageLightbox';
 import { FiMail, FiPhone } from 'react-icons/fi';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const ServiceDetail = () => {
     const { slug } = useParams();
@@ -45,7 +46,7 @@ const ServiceDetail = () => {
                 <div className="container">
                     <Link to="/" style={styles.backLink}>← Quay lại trang chủ</Link>
                     <div style={styles.heroRow}>
-                        {service.icon && <img src={service.icon} alt="" style={styles.heroIcon} />}
+                        {service.icon && <img src={optimizeImage(service.icon, 100)} alt="" style={styles.heroIcon} />}
                         <h1 style={styles.title}>{service.title}</h1>
                     </div>
                     {service.shortDescription && <p style={styles.subtitle}>{service.shortDescription}</p>}
@@ -56,7 +57,7 @@ const ServiceDetail = () => {
                 <div className="container" style={styles.articleContainer}>
                     {service.coverImage && (
                         <img
-                            src={service.coverImage}
+                            src={optimizeImage(service.coverImage, 900)}
                             alt={service.title}
                             style={styles.coverImage}
                             onClick={() => setLightboxImage(service.coverImage)}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FiPlus, FiX } from 'react-icons/fi';
 import MediaLibraryModal from './MediaLibraryModal';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 /**
  * Props:
@@ -29,7 +30,7 @@ const MultiImageField = ({ value = [], onChange, label }) => {
             <div style={styles.grid}>
                 {value.map((url, index) => (
                     <div key={index} style={styles.item}>
-                        <img src={url} alt={`Ảnh ${index + 1}`} style={styles.itemImg} />
+                        <img src={optimizeImage(url, 150)} alt={`Ảnh ${index + 1}`} style={styles.itemImg} loading="lazy" />
                         <button type="button" onClick={() => handleRemove(url)} style={styles.removeBtn}>
                             <FiX size={12} />
                         </button>

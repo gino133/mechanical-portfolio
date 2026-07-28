@@ -26,6 +26,13 @@ const DocumentsManager = () => {
     const [sortField, setSortField] = useState('uploadedAt');
     const [sortDir, setSortDir] = useState('desc');
 
+    // Render pagination for the table below - filtering/sorting still runs
+    // over the full in-memory list (cheap for plain arrays), but with
+    // 1000+ documents rendering every row at once as DOM nodes is what
+    // actually gets slow, so only one page of rows is rendered at a time.
+    const PAGE_SIZE = 50;
+    const [page, setPage] = useState(1);
+
     // Edit modal (rename / re-categorize an existing document)
     const [editingDoc, setEditingDoc] = useState(null);
     const [editName, setEditName] = useState('');
@@ -204,6 +211,19 @@ const DocumentsManager = () => {
         return list;
     }, [documents, searchTerm, filterCategory, filterType, sortField, sortDir]);
 
+    // Whenever the filtered/sorted set changes shape, the current page may
+    // no longer make sense (e.g. a search narrows results to 1 page) - snap
+    // back to page 1 rather than showing an empty page.
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm, filterCategory, filterType, sortField, sortDir]);
+
+    const totalPages = Math.max(1, Math.ceil(displayedDocs.length / PAGE_SIZE));
+    const pagedDocs = useMemo(
+        () => displayedDocs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+        [displayedDocs, page]
+    );
+
     const SortHeader = ({ field, children }) => (
         <th onClick={() => toggleSort(field)} style={styles.sortableTh}>
             <span style={styles.sortHeaderContent}>
@@ -372,7 +392,11 @@ const DocumentsManager = () => {
                         <option key={type} value={type}>{type.toUpperCase()}</option>
                     ))}
                 </select>
-                <span style={styles.resultCount}>{displayedDocs.length} / {documents.length} tài liệu</span>
+                <span style={styles.resultCount}>
+                    Hiển thị {displayedDocs.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}
+                    –{Math.min(page * PAGE_SIZE, displayedDocs.length)} / {displayedDocs.length} tài liệu
+                    {displayedDocs.length !== documents.length ? ` (tổng ${documents.length})` : ''}
+                </span>
             </div>
 
             {/* Scrollable list */}
@@ -389,7 +413,7 @@ const DocumentsManager = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {displayedDocs.map(doc => (
+                        {pagedDocs.map(doc => (
                             <tr key={doc._id}>
                                 <td>{doc.name}</td>
                                 <td>{doc.category?.name || '—'}</td>
@@ -415,6 +439,26 @@ const DocumentsManager = () => {
                     </tbody>
                 </table>
             </div>
+
+            {totalPages > 1 && (
+                <div style={styles.pagination}>
+                    <button
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        style={styles.pageBtn}
+                    >
+                        ← Trang trước
+                    </button>
+                    <span style={styles.pageInfo}>Trang {page} / {totalPages}</span>
+                    <button
+                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        style={styles.pageBtn}
+                    >
+                        Trang sau →
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
@@ -432,6 +476,15 @@ const styles = {
     searchInput: { width: '100%', padding: '9px 10px 9px 32px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' },
     filterSelect: { padding: '9px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', background: 'white' },
     resultCount: { fontSize: '13px', color: '#888', marginLeft: 'auto' },
+    pagination: {
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px',
+        marginTop: '16px', padding: '12px'
+    },
+    pageBtn: {
+        background: 'white', border: '1px solid #ddd', borderRadius: '6px',
+        padding: '8px 16px', cursor: 'pointer', fontSize: '13px'
+    },
+    pageInfo: { fontSize: '13px', color: '#555' },
     table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px' },
     sortableTh: { cursor: 'pointer', userSelect: 'none' },
     sortHeaderContent: { display: 'inline-flex', alignItems: 'center', gap: '4px' },

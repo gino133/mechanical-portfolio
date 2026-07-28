@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { blogAPI } from '../services/api';
 import ImageLightbox from '../components/common/ImageLightbox';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const BlogDetail = () => {
     const { slug } = useParams();
@@ -58,7 +59,7 @@ const BlogDetail = () => {
                 <div className="container" style={styles.articleContainer}>
                     {post.coverImage && (
                         <img
-                            src={post.coverImage}
+                            src={optimizeImage(post.coverImage, 900)}
                             alt={post.title}
                             style={styles.coverImage}
                             onClick={() => setLightboxImage(post.coverImage)}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const Card = ({ 
     children, 
@@ -45,7 +46,7 @@ const Card = ({
         >
             {image && (
                 <div style={styles.imageContainer}>
-                    <img src={image} alt={title} style={styles.image} />
+                    <img src={optimizeImage(image, 400)} alt={title} style={styles.image} loading="lazy" />
                     {category && (
                         <span style={styles.category}>{category}</span>
                     )}

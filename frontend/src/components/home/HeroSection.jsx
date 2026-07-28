@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../contexts/SettingsContext';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const HeroSection = () => {
     const { settings } = useSettings();
@@ -11,7 +12,7 @@ const HeroSection = () => {
                 style={{
                     ...styles.overlay,
                     background: settings.heroImage
-                        ? `url(${settings.heroImage}) center/cover`
+                        ? `url(${optimizeImage(settings.heroImage, 1920)}) center/cover`
                         : styles.overlay.background
                 }}
             ></div>

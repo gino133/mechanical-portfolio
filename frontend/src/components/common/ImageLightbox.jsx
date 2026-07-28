@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { FiX } from 'react-icons/fi';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 /**
  * Full-screen image popup.
@@ -38,7 +39,7 @@ const ImageLightbox = ({ src, alt = '', onClose }) => {
             <button style={styles.closeBtn} onClick={onClose} aria-label="Đóng">
                 <FiX />
             </button>
-            <img src={src} alt={alt} style={styles.image} onClick={handleBackdropClick} />
+            <img src={optimizeImage(src, 1600)} alt={alt} style={styles.image} onClick={handleBackdropClick} />
         </div>
     );
 };

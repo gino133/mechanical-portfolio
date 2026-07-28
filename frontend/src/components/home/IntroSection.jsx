@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { GiGears } from 'react-icons/gi';
 import { useSettings } from '../../contexts/SettingsContext';
 import { serviceAPI } from '../../services/api';
+import { optimizeImage } from '../../utils/optimizeImage';
 
 const IntroSection = () => {
     const { settings } = useSettings();
@@ -37,7 +38,7 @@ const IntroSection = () => {
                             <Link key={service._id} to={`/services/${service.slug}`} style={styles.cardLink}>
                                 <div style={styles.card}>
                                     {service.icon ? (
-                                        <img src={service.icon} alt={service.title} style={styles.cardIcon} />
+                                        <img src={optimizeImage(service.icon, 100)} alt={service.title} style={styles.cardIcon} loading="lazy" />
                                     ) : (
                                         <GiGears size={48} color="var(--primary-color)" />
                                     )}
