@@ -49,6 +49,11 @@ const documentSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    // Admin can hide a document from the public site without deleting it.
+    isVisible: {
+        type: Boolean,
+        default: true
+    },
     // Accent-stripped, lowercased copy of name, kept in sync via the
     // pre-save hook below.
     searchText: {
@@ -65,13 +70,5 @@ documentSchema.pre('save', function(next) {
     this.searchText = removeDiacritics(this.name);
     next();
 });
-
-// getDocuments() filters by category and/or searchText, and always sorts
-// by -uploadedAt. Without these indexes Mongo does a full collection scan
-// (+ in-memory sort) on every list request, which gets slower as the
-// document count grows.
-documentSchema.index({ uploadedAt: -1 });
-documentSchema.index({ category: 1, uploadedAt: -1 });
-documentSchema.index({ searchText: 1 });
 
 module.exports = mongoose.model('Document', documentSchema);
