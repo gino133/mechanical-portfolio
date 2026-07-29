@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../services/api';
 import { categoryAPI, documentAPI } from '../../services/api';
 import { removeDiacritics } from '../../utils/removeDiacritics';
-import { FiDownload, FiTrash2, FiCheck, FiFile, FiEdit2, FiChevronUp, FiChevronDown, FiSearch } from 'react-icons/fi';
+import { FiDownload, FiTrash2, FiCheck, FiFile, FiEdit2, FiChevronUp, FiChevronDown, FiSearch, FiEye, FiEyeOff } from 'react-icons/fi';
 
 const stripExtension = (fileName) => fileName.replace(/\.[^/.]+$/, '');
 
@@ -26,17 +26,17 @@ const DocumentsManager = () => {
     const [sortField, setSortField] = useState('uploadedAt');
     const [sortDir, setSortDir] = useState('desc');
 
-    // Render pagination for the table below - filtering/sorting still runs
-    // over the full in-memory list (cheap for plain arrays), but with
-    // 1000+ documents rendering every row at once as DOM nodes is what
-    // actually gets slow, so only one page of rows is rendered at a time.
-    const PAGE_SIZE = 50;
-    const [page, setPage] = useState(1);
+    // Multi-select for bulk actions
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [bulkCategoryModal, setBulkCategoryModal] = useState(false);
+    const [bulkCategoryValue, setBulkCategoryValue] = useState('');
+    const [bulkBusy, setBulkBusy] = useState(false);
 
-    // Edit modal (rename / re-categorize an existing document)
+    // Edit modal (rename / re-categorize / show-hide a single document)
     const [editingDoc, setEditingDoc] = useState(null);
     const [editName, setEditName] = useState('');
     const [editCategory, setEditCategory] = useState('');
+    const [editVisible, setEditVisible] = useState(true);
     const [savingEdit, setSavingEdit] = useState(false);
 
     const token = localStorage.getItem('token');
@@ -48,8 +48,9 @@ const DocumentsManager = () => {
 
     const fetchDocuments = async () => {
         try {
-            const allDocs = await documentAPI.getAllUnpaginated();
-            setDocuments(allDocs);
+            // Admin sees hidden documents too, unlike the public endpoint.
+            const response = await documentAPI.getAllAdmin();
+            setDocuments(response.data.data);
         } catch (error) {
             console.error('Lỗi tải tài liệu:', error);
         } finally {
@@ -128,6 +129,7 @@ const DocumentsManager = () => {
                 await api.delete(`/documents/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
+                setSelectedIds((prev) => prev.filter((i) => i !== id));
                 fetchDocuments();
             } catch (error) {
                 console.error('Lỗi xóa tài liệu:', error);
@@ -139,6 +141,7 @@ const DocumentsManager = () => {
         setEditingDoc(doc);
         setEditName(doc.name);
         setEditCategory(doc.category?._id || '');
+        setEditVisible(doc.isVisible !== false);
     };
 
     const handleSaveEdit = async () => {
@@ -148,11 +151,10 @@ const DocumentsManager = () => {
         }
         setSavingEdit(true);
         try {
-            await api.put(`/documents/${editingDoc._id}`, {
+            await documentAPI.update(editingDoc._id, {
                 name: editName.trim(),
-                category: editCategory || undefined
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
+                category: editCategory || undefined,
+                isVisible: editVisible
             });
             setEditingDoc(null);
             fetchDocuments();
@@ -211,18 +213,69 @@ const DocumentsManager = () => {
         return list;
     }, [documents, searchTerm, filterCategory, filterType, sortField, sortDir]);
 
-    // Whenever the filtered/sorted set changes shape, the current page may
-    // no longer make sense (e.g. a search narrows results to 1 page) - snap
-    // back to page 1 rather than showing an empty page.
-    useEffect(() => {
-        setPage(1);
-    }, [searchTerm, filterCategory, filterType, sortField, sortDir]);
+    // ===== Multi-select =====
+    const allVisibleSelected = displayedDocs.length > 0 && displayedDocs.every((d) => selectedIds.includes(d._id));
 
-    const totalPages = Math.max(1, Math.ceil(displayedDocs.length / PAGE_SIZE));
-    const pagedDocs = useMemo(
-        () => displayedDocs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-        [displayedDocs, page]
-    );
+    const toggleSelectAll = () => {
+        if (allVisibleSelected) {
+            const displayedIds = displayedDocs.map((d) => d._id);
+            setSelectedIds((prev) => prev.filter((id) => !displayedIds.includes(id)));
+        } else {
+            const displayedIds = displayedDocs.map((d) => d._id);
+            setSelectedIds((prev) => [...new Set([...prev, ...displayedIds])]);
+        }
+    };
+
+    const toggleSelectOne = (id) => {
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    };
+
+    const clearSelection = () => setSelectedIds([]);
+
+    const handleBulkVisibility = async (isVisible) => {
+        setBulkBusy(true);
+        try {
+            await documentAPI.bulkUpdate(selectedIds, { isVisible });
+            clearSelection();
+            fetchDocuments();
+        } catch (error) {
+            console.error('Lỗi cập nhật hàng loạt:', error);
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
+    const handleBulkCategoryApply = async () => {
+        setBulkBusy(true);
+        try {
+            await documentAPI.bulkUpdate(selectedIds, { category: bulkCategoryValue || null });
+            setBulkCategoryModal(false);
+            setBulkCategoryValue('');
+            clearSelection();
+            fetchDocuments();
+        } catch (error) {
+            console.error('Lỗi đổi nhóm hàng loạt:', error);
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setBulkBusy(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (!window.confirm(`Xoá vĩnh viễn ${selectedIds.length} tài liệu đã chọn? Hành động này không thể hoàn tác.`)) return;
+        setBulkBusy(true);
+        try {
+            await documentAPI.bulkDelete(selectedIds);
+            clearSelection();
+            fetchDocuments();
+        } catch (error) {
+            console.error('Lỗi xóa hàng loạt:', error);
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setBulkBusy(false);
+        }
+    };
 
     const SortHeader = ({ field, children }) => (
         <th onClick={() => toggleSort(field)} style={styles.sortableTh}>
@@ -357,11 +410,44 @@ const DocumentsManager = () => {
                                 <option key={cat._id} value={cat._id}>{cat.name}</option>
                             ))}
                         </select>
+                        <label style={styles.checkboxRow}>
+                            <input
+                                type="checkbox"
+                                checked={editVisible}
+                                onChange={(e) => setEditVisible(e.target.checked)}
+                            />
+                            Hiển thị công khai trên website
+                        </label>
                         <div style={styles.modalButtons}>
                             <button onClick={handleSaveEdit} disabled={savingEdit} style={styles.saveBtn}>
                                 {savingEdit ? 'Đang lưu...' : 'Lưu thay đổi'}
                             </button>
                             <button type="button" onClick={() => setEditingDoc(null)} style={styles.cancelBtn}>Hủy</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {bulkCategoryModal && (
+                <div style={styles.modal}>
+                    <div style={{ ...styles.modalContent, width: '420px' }}>
+                        <h3>Đổi danh mục cho {selectedIds.length} tài liệu</h3>
+                        <label style={styles.label}>Danh mục mới</label>
+                        <select
+                            value={bulkCategoryValue}
+                            onChange={(e) => setBulkCategoryValue(e.target.value)}
+                            style={styles.input}
+                        >
+                            <option value="">-- Không thuộc mục nào --</option>
+                            {categories.map((cat) => (
+                                <option key={cat._id} value={cat._id}>{cat.name}</option>
+                            ))}
+                        </select>
+                        <div style={styles.modalButtons}>
+                            <button onClick={handleBulkCategoryApply} disabled={bulkBusy} style={styles.saveBtn}>
+                                {bulkBusy ? 'Đang lưu...' : 'Áp dụng'}
+                            </button>
+                            <button type="button" onClick={() => setBulkCategoryModal(false)} style={styles.cancelBtn}>Hủy</button>
                         </div>
                     </div>
                 </div>
@@ -392,34 +478,64 @@ const DocumentsManager = () => {
                         <option key={type} value={type}>{type.toUpperCase()}</option>
                     ))}
                 </select>
-                <span style={styles.resultCount}>
-                    Hiển thị {displayedDocs.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}
-                    –{Math.min(page * PAGE_SIZE, displayedDocs.length)} / {displayedDocs.length} tài liệu
-                    {displayedDocs.length !== documents.length ? ` (tổng ${documents.length})` : ''}
-                </span>
+                <span style={styles.resultCount}>{displayedDocs.length} / {documents.length} tài liệu</span>
             </div>
+
+            {/* Bulk action bar - only shown when something is selected */}
+            {selectedIds.length > 0 && (
+                <div style={styles.bulkBar}>
+                    <span style={styles.bulkCount}>Đã chọn {selectedIds.length} tài liệu</span>
+                    <button onClick={() => handleBulkVisibility(false)} disabled={bulkBusy} style={styles.bulkBtn}>
+                        <FiEyeOff /> Ẩn
+                    </button>
+                    <button onClick={() => handleBulkVisibility(true)} disabled={bulkBusy} style={styles.bulkBtn}>
+                        <FiEye /> Hiện
+                    </button>
+                    <button onClick={() => setBulkCategoryModal(true)} disabled={bulkBusy} style={styles.bulkBtn}>
+                        <FiEdit2 /> Đổi nhóm
+                    </button>
+                    <button onClick={handleBulkDelete} disabled={bulkBusy} style={styles.bulkDeleteBtn}>
+                        <FiTrash2 /> Xóa
+                    </button>
+                    <button onClick={clearSelection} disabled={bulkBusy} style={styles.bulkCancelBtn}>
+                        Bỏ chọn
+                    </button>
+                </div>
+            )}
 
             {/* Scrollable list */}
             <div className="admin-table-wrap admin-scroll-list">
                 <table style={styles.table}>
                     <thead>
                         <tr>
+                            <th style={{ width: '36px' }}>
+                                <input type="checkbox" checked={allVisibleSelected} onChange={toggleSelectAll} />
+                            </th>
                             <SortHeader field="name">Tên tài liệu</SortHeader>
                             <SortHeader field="category">Danh mục</SortHeader>
                             <SortHeader field="fileType">Loại file</SortHeader>
                             <SortHeader field="fileSize">Dung lượng</SortHeader>
                             <SortHeader field="uploadedAt">Ngày upload</SortHeader>
+                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {pagedDocs.map(doc => (
-                            <tr key={doc._id}>
+                        {displayedDocs.map(doc => (
+                            <tr key={doc._id} style={doc.isVisible === false ? styles.hiddenRow : undefined}>
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.includes(doc._id)}
+                                        onChange={() => toggleSelectOne(doc._id)}
+                                    />
+                                </td>
                                 <td>{doc.name}</td>
                                 <td>{doc.category?.name || '—'}</td>
                                 <td>{doc.fileType?.toUpperCase() || 'N/A'}</td>
                                 <td>{doc.fileSize ? (doc.fileSize / 1024).toFixed(2) + ' KB' : 'N/A'}</td>
                                 <td>{new Date(doc.uploadedAt).toLocaleDateString('vi-VN')}</td>
+                                <td>{doc.isVisible === false ? '⚪ Đã ẩn' : '🟢 Đang hiện'}</td>
                                 <td>
                                     <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.downloadBtn}>
                                         <FiDownload />
@@ -434,31 +550,11 @@ const DocumentsManager = () => {
                             </tr>
                         ))}
                         {displayedDocs.length === 0 && (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#999' }}>Không có tài liệu nào khớp bộ lọc</td></tr>
+                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: '#999' }}>Không có tài liệu nào khớp bộ lọc</td></tr>
                         )}
                     </tbody>
                 </table>
             </div>
-
-            {totalPages > 1 && (
-                <div style={styles.pagination}>
-                    <button
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                        style={styles.pageBtn}
-                    >
-                        ← Trang trước
-                    </button>
-                    <span style={styles.pageInfo}>Trang {page} / {totalPages}</span>
-                    <button
-                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                        disabled={page === totalPages}
-                        style={styles.pageBtn}
-                    >
-                        Trang sau →
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
@@ -469,25 +565,33 @@ const styles = {
     warning: { background: '#fff3cd', color: '#856404', padding: '12px 16px', borderRadius: '6px', marginBottom: '16px' },
     filterBar: {
         display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center',
-        marginBottom: '16px', background: 'white', padding: '12px', borderRadius: '8px'
+        marginBottom: '12px', background: 'white', padding: '12px', borderRadius: '8px'
     },
     searchBox: { position: 'relative', flex: '1 1 220px' },
     searchIcon: { position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#999' },
     searchInput: { width: '100%', padding: '9px 10px 9px 32px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' },
     filterSelect: { padding: '9px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', background: 'white' },
     resultCount: { fontSize: '13px', color: '#888', marginLeft: 'auto' },
-    pagination: {
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px',
-        marginTop: '16px', padding: '12px'
+    bulkBar: {
+        display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center',
+        background: '#eef4fb', padding: '10px 14px', borderRadius: '8px', marginBottom: '12px'
     },
-    pageBtn: {
-        background: 'white', border: '1px solid #ddd', borderRadius: '6px',
-        padding: '8px 16px', cursor: 'pointer', fontSize: '13px'
+    bulkCount: { fontSize: '14px', fontWeight: '600', color: '#1a3a5c', marginRight: '8px' },
+    bulkBtn: {
+        display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid #ccd7e3',
+        borderRadius: '6px', padding: '7px 12px', cursor: 'pointer', fontSize: '13px', color: '#1a3a5c'
     },
-    pageInfo: { fontSize: '13px', color: '#555' },
+    bulkDeleteBtn: {
+        display: 'flex', alignItems: 'center', gap: '6px', background: '#dc3545', color: 'white', border: 'none',
+        borderRadius: '6px', padding: '7px 12px', cursor: 'pointer', fontSize: '13px'
+    },
+    bulkCancelBtn: {
+        background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '13px', marginLeft: 'auto'
+    },
     table: { width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '8px' },
     sortableTh: { cursor: 'pointer', userSelect: 'none' },
     sortHeaderContent: { display: 'inline-flex', alignItems: 'center', gap: '4px' },
+    hiddenRow: { opacity: 0.55 },
     downloadBtn: { background: '#17a2b8', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '6px', display: 'inline-block' },
     editBtn: { background: '#ffc107', color: '#333', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', marginRight: '6px' },
     deleteBtn: { background: '#dc3545', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' },
@@ -495,6 +599,7 @@ const styles = {
     modalContent: { background: 'white', padding: '24px', borderRadius: '12px', width: '550px', maxWidth: '100%' },
     label: { display: 'block', fontSize: '13px', color: '#555', marginBottom: '6px', marginTop: '12px' },
     input: { width: '100%', padding: '10px', marginBottom: '16px', border: '1px solid #ddd', borderRadius: '6px' },
+    checkboxRow: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '8px' },
     dropZone: {
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         padding: '30px', border: '2px dashed #ccc', borderRadius: '10px', cursor: 'pointer', marginBottom: '16px'
