@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { settingsAPI } from '../services/api';
+import { optimizeImage } from '../utils/optimizeImage';
 
 const SettingsContext = createContext();
 
@@ -141,6 +142,7 @@ export const SettingsProvider = ({ children }) => {
             setSettings(mergedSettings);
             localStorage.setItem('site_settings', JSON.stringify(mergedSettings));
             applySettingsToCSS(mergedSettings);
+            applyMetaTags(mergedSettings);
 
             const mergedMenu = fetchedMenu && fetchedMenu.length > 0 ? fetchedMenu : DEFAULT_MENU;
             setMenu(mergedMenu);
@@ -148,6 +150,7 @@ export const SettingsProvider = ({ children }) => {
         } catch (error) {
             console.error('Không tải được cài đặt từ server, dùng dữ liệu tạm:', error);
             applySettingsToCSS(settings);
+            applyMetaTags(settings);
         } finally {
             setLoading(false);
         }
@@ -158,6 +161,7 @@ export const SettingsProvider = ({ children }) => {
         setSettings(newSettings);
         localStorage.setItem('site_settings', JSON.stringify(newSettings));
         applySettingsToCSS(newSettings);
+        applyMetaTags(newSettings);
 
         try {
             const response = await settingsAPI.update(newSettings);
@@ -202,6 +206,39 @@ export const SettingsProvider = ({ children }) => {
         root.style.setProperty('--font-family', settings.fontFamily);
         root.style.setProperty('--border-radius', settings.borderRadius);
         document.body.style.fontSize = settings.fontSize;
+    };
+
+    // Applies the browser tab title, meta description, and favicon from
+    // settings - these live in the database (siteTitle/siteDescription/
+    // favicon) but index.html is static, so nothing ever pushed them to
+    // the actual <head> until now.
+    const applyMetaTags = (settings) => {
+        if (settings.siteTitle) {
+            document.title = settings.siteTitle;
+        }
+
+        if (settings.siteDescription) {
+            let metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) {
+                metaDesc = document.createElement('meta');
+                metaDesc.setAttribute('name', 'description');
+                document.head.appendChild(metaDesc);
+            }
+            metaDesc.setAttribute('content', settings.siteDescription);
+        }
+
+        if (settings.favicon) {
+            let link = document.querySelector('link[rel="icon"]');
+            if (!link) {
+                link = document.createElement('link');
+                link.setAttribute('rel', 'icon');
+                document.head.appendChild(link);
+            }
+            // Small square size is enough for a favicon; also drops it to
+            // auto format/quality via the same Cloudinary transform used
+            // for every other image on the site.
+            link.setAttribute('href', optimizeImage(settings.favicon, 64));
+        }
     };
 
     return (
