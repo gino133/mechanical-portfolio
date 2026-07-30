@@ -15,6 +15,13 @@ const getDocuments = async (req, res) => {
 
         let query = {};
 
+        // Anonymous visitors and non-admin users never see hidden documents.
+        // req.user is only set here when optionalAuth found a valid admin
+        // token, so admins keep seeing the full list (including hidden).
+        if (!(req.user && req.user.role === 'admin')) {
+            query.isVisible = { $ne: false };
+        }
+
         if (category && category !== 'all') {
             query.category = category;
         }
@@ -163,6 +170,7 @@ const updateDocument = async (req, res) => {
 
         if (req.body.name !== undefined) document.name = req.body.name;
         if (req.body.category !== undefined) document.category = req.body.category || undefined;
+        if (req.body.isVisible !== undefined) document.isVisible = !!req.body.isVisible;
 
         // searchText is recomputed by the pre-save hook since we use
         // document.save() here (unlike findByIdAndUpdate elsewhere).
@@ -219,11 +227,57 @@ const deleteDocument = async (req, res) => {
     }
 };
 
+// @desc    Bulk hide / show / re-categorize / delete multiple documents
+// @route   PATCH /api/v1/documents/bulk
+// @access  Private/Admin
+const bulkUpdateDocuments = async (req, res) => {
+    try {
+        const { ids, action, category } = req.body;
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ success: false, message: 'No document ids provided' });
+        }
+
+        if (action === 'hide') {
+            await Document.updateMany({ _id: { $in: ids } }, { isVisible: false });
+        } else if (action === 'show') {
+            await Document.updateMany({ _id: { $in: ids } }, { isVisible: true });
+        } else if (action === 'category') {
+            await Document.updateMany(
+                { _id: { $in: ids } },
+                category ? { category } : { $unset: { category: '' } }
+            );
+        } else if (action === 'delete') {
+            const docs = await Document.find({ _id: { $in: ids } });
+            for (const document of docs) {
+                const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes((document.fileType || '').toLowerCase());
+                const publicId = document.publicId || `portfolio/${document.fileUrl.split('/').pop().split('.')[0]}`;
+                try {
+                    await cloudinary.uploader.destroy(publicId, {
+                        resource_type: isImage ? 'image' : 'raw'
+                    });
+                } catch (error) {
+                    console.error(`Cloudinary delete failed for ${document._id} (record will still be removed):`, error.message);
+                }
+            }
+            await Document.deleteMany({ _id: { $in: ids } });
+        } else {
+            return res.status(400).json({ success: false, message: 'Unknown bulk action' });
+        }
+
+        res.json({ success: true, count: ids.length });
+    } catch (error) {
+        console.error('bulkUpdateDocuments error:', error);
+        res.status(500).json({ success: false, message: 'Bulk action failed' });
+    }
+};
+
 module.exports = {
     getDocuments,
     getDocumentById,
     downloadDocument,
     uploadDocument,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    bulkUpdateDocuments
 };

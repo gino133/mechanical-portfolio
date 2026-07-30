@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { protect, admin } = require('../middleware/authMiddleware');
+const { protect, admin, optionalAuth } = require('../middleware/authMiddleware');
 const { upload } = require('../middleware/uploadMiddleware');
 const {
     getDocuments,
@@ -8,14 +8,17 @@ const {
     downloadDocument,
     uploadDocument,
     updateDocument,
-    deleteDocument
+    deleteDocument,
+    bulkUpdateDocuments
 } = require('../controllers/documentController');
 
 router.route('/')
-    .get(getDocuments)
+    .get(optionalAuth, getDocuments)
     .post(protect, admin, upload.single('file'), uploadDocument);
 
 router.get('/download/:id', downloadDocument);
+
+router.patch('/bulk', protect, admin, bulkUpdateDocuments);
 
 router.route('/:id')
     .get(getDocumentById)

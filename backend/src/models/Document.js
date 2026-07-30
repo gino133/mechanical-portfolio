@@ -55,6 +55,13 @@ const documentSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    // Documents manager "hide" feature: hidden documents stay in the admin
+    // list (dimmed, shown as "Đã ẩn") but are excluded from public listing
+    // queries. Defaults to true so every existing document stays visible.
+    isVisible: {
+        type: Boolean,
+        default: true
+    },
     uploadedAt: {
         type: Date,
         default: Date.now
@@ -73,5 +80,6 @@ documentSchema.pre('save', function(next) {
 documentSchema.index({ uploadedAt: -1 });
 documentSchema.index({ category: 1, uploadedAt: -1 });
 documentSchema.index({ searchText: 1 });
+documentSchema.index({ isVisible: 1, uploadedAt: -1 });
 
 module.exports = mongoose.model('Document', documentSchema);
