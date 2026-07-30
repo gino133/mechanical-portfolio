@@ -5,6 +5,7 @@ import { productAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
 import { optimizeImage } from '../utils/optimizeImage';
+import { stripHtml } from '../utils/stripHtml';
 
 const Products = () => {
     const { settings } = useSettings();
@@ -105,7 +106,7 @@ const Products = () => {
                                         <span className="card-category">{product.category?.name}</span>
                                         <h3 className="card-title">{product.name}</h3>
                                         <p>Mã: {product.code}</p>
-                                        <p style={styles.specs}>{product.description}</p>
+                                        <p style={styles.specs}>{stripHtml(product.description).substring(0, 140)}{stripHtml(product.description).length > 140 ? '...' : ''}</p>
                                         <Link to={`/products/${product._id}`} className="btn btn-outline" style={styles.btn}>
                                             Xem chi tiết
                                         </Link>

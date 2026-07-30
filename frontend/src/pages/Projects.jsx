@@ -4,6 +4,7 @@ import { projectAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
 import { optimizeImage } from '../utils/optimizeImage';
+import { stripHtml } from '../utils/stripHtml';
 
 const Projects = () => {
     const { settings } = useSettings();
@@ -86,7 +87,7 @@ const Projects = () => {
                                         <h3 className="card-title">{project.name}</h3>
                                         <p><strong>Khách hàng:</strong> {project.client}</p>
                                         <p><strong>Năm:</strong> {project.year}</p>
-                                        <p>{project.description}</p>
+                                        <p>{stripHtml(project.description).substring(0, 140)}{stripHtml(project.description).length > 140 ? '...' : ''}</p>
                                         <Link to={`/projects/${project._id}`} className="btn btn-primary" style={styles.btn}>
                                             Xem chi tiết →
                                         </Link>

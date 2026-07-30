@@ -4,8 +4,7 @@ import { blogAPI, categoryAPI } from '../services/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { heroBackgroundStyle } from '../utils/heroBackground';
 import { optimizeImage } from '../utils/optimizeImage';
-
-const stripHtml = (html) => html.replace(/<[^>]*>/g, '').trim();
+import { stripHtml } from '../utils/stripHtml';
 
 const Blog = () => {
     const { settings } = useSettings();

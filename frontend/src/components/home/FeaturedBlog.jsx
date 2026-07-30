@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogAPI } from '../../services/api';
 import { optimizeImage } from '../../utils/optimizeImage';
-
-const stripHtml = (html) => (html || '').replace(/<[^>]*>/g, '').trim();
+import { stripHtml } from '../../utils/stripHtml';
 
 const FeaturedBlog = () => {
     const [posts, setPosts] = useState([]);
