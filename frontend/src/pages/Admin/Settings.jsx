@@ -172,6 +172,15 @@ const Settings = () => {
                     </div>
 
                     <div style={styles.formGroup}>
+                        <ImageField
+                            label="Favicon (icon hiển thị trên tab trình duyệt)"
+                            value={form.favicon || ''}
+                            onChange={(url) => setForm({ ...form, favicon: url })}
+                        />
+                        <p style={styles.hint}>Nên dùng ảnh vuông (VD 512x512px), nền trong suốt (PNG) để hiển thị đẹp ở mọi kích thước.</p>
+                    </div>
+
+                    <div style={styles.formGroup}>
                         <label>Font chữ chính</label>
                         <select name="fontFamily" value={form.fontFamily || ''} onChange={handleChange} style={styles.select}>
                             <option value="Segoe UI, Tahoma, Geneva, Verdana, sans-serif">Segoe UI</option>
