@@ -37,7 +37,14 @@ const DocumentsManager = () => {
     const [editingDoc, setEditingDoc] = useState(null);
     const [editName, setEditName] = useState('');
     const [editCategory, setEditCategory] = useState('');
+    const [editVisible, setEditVisible] = useState(true);
     const [savingEdit, setSavingEdit] = useState(false);
+
+    // Bulk selection (row checkboxes + toolbar)
+    const [selectedIds, setSelectedIds] = useState(new Set());
+    const [bulkBusy, setBulkBusy] = useState(false);
+    const [showBulkCategoryPicker, setShowBulkCategoryPicker] = useState(false);
+    const [bulkCategory, setBulkCategory] = useState('');
 
     const token = localStorage.getItem('token');
 
@@ -139,6 +146,7 @@ const DocumentsManager = () => {
         setEditingDoc(doc);
         setEditName(doc.name);
         setEditCategory(doc.category?._id || '');
+        setEditVisible(doc.isVisible !== false);
     };
 
     const handleSaveEdit = async () => {
@@ -150,7 +158,8 @@ const DocumentsManager = () => {
         try {
             await api.put(`/documents/${editingDoc._id}`, {
                 name: editName.trim(),
-                category: editCategory || undefined
+                category: editCategory || undefined,
+                isVisible: editVisible
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -170,6 +179,47 @@ const DocumentsManager = () => {
         } else {
             setSortField(field);
             setSortDir('asc');
+        }
+    };
+
+    const toggleSelectOne = (id) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectPage = (idsOnPage, allSelected) => {
+        setSelectedIds((prev) => {
+            const next = new Set(prev);
+            if (allSelected) {
+                idsOnPage.forEach((id) => next.delete(id));
+            } else {
+                idsOnPage.forEach((id) => next.add(id));
+            }
+            return next;
+        });
+    };
+
+    const clearSelection = () => setSelectedIds(new Set());
+
+    const runBulkAction = async (action, category) => {
+        if (selectedIds.size === 0) return;
+        if (action === 'delete' && !window.confirm(`Xóa vĩnh viễn ${selectedIds.size} tài liệu đã chọn? Hành động này không thể hoàn tác.`)) {
+            return;
+        }
+        setBulkBusy(true);
+        try {
+            await documentAPI.bulkUpdate(Array.from(selectedIds), action, category);
+            clearSelection();
+            setShowBulkCategoryPicker(false);
+            await fetchDocuments();
+        } catch (error) {
+            console.error('Lỗi thao tác hàng loạt:', error);
+            alert(error.response?.data?.message || 'Có lỗi xảy ra');
+        } finally {
+            setBulkBusy(false);
         }
     };
 
@@ -357,6 +407,14 @@ const DocumentsManager = () => {
                                 <option key={cat._id} value={cat._id}>{cat.name}</option>
                             ))}
                         </select>
+                        <label style={styles.checkboxRow}>
+                            <input
+                                type="checkbox"
+                                checked={editVisible}
+                                onChange={(e) => setEditVisible(e.target.checked)}
+                            />
+                            Hiển thị công khai (bỏ tick để ẩn khỏi trang Tài liệu, vẫn giữ trong Admin)
+                        </label>
                         <div style={styles.modalButtons}>
                             <button onClick={handleSaveEdit} disabled={savingEdit} style={styles.saveBtn}>
                                 {savingEdit ? 'Đang lưu...' : 'Lưu thay đổi'}
@@ -364,6 +422,45 @@ const DocumentsManager = () => {
                             <button type="button" onClick={() => setEditingDoc(null)} style={styles.cancelBtn}>Hủy</button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Bulk action toolbar */}
+            {selectedIds.size > 0 && (
+                <div style={styles.bulkBar}>
+                    <span style={styles.bulkCount}>Đã chọn {selectedIds.size} tài liệu</span>
+                    <button onClick={() => runBulkAction('hide')} disabled={bulkBusy} style={styles.bulkBtn}>Ẩn</button>
+                    <button onClick={() => runBulkAction('show')} disabled={bulkBusy} style={styles.bulkBtn}>Hiện</button>
+                    <button
+                        onClick={() => setShowBulkCategoryPicker((v) => !v)}
+                        disabled={bulkBusy}
+                        style={styles.bulkBtn}
+                    >
+                        Đổi nhóm
+                    </button>
+                    {showBulkCategoryPicker && (
+                        <>
+                            <select
+                                value={bulkCategory}
+                                onChange={(e) => setBulkCategory(e.target.value)}
+                                style={styles.filterSelect}
+                            >
+                                <option value="">-- Không thuộc mục nào --</option>
+                                {categories.map((cat) => (
+                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                ))}
+                            </select>
+                            <button
+                                onClick={() => runBulkAction('category', bulkCategory)}
+                                disabled={bulkBusy}
+                                style={styles.bulkBtnConfirm}
+                            >
+                                Áp dụng
+                            </button>
+                        </>
+                    )}
+                    <button onClick={() => runBulkAction('delete')} disabled={bulkBusy} style={styles.bulkBtnDanger}>Xóa</button>
+                    <button onClick={clearSelection} disabled={bulkBusy} style={styles.bulkBtnCancel}>Bỏ chọn</button>
                 </div>
             )}
 
@@ -404,22 +501,45 @@ const DocumentsManager = () => {
                 <table style={styles.table}>
                     <thead>
                         <tr>
+                            <th style={styles.checkboxTh}>
+                                <input
+                                    type="checkbox"
+                                    checked={pagedDocs.length > 0 && pagedDocs.every((d) => selectedIds.has(d._id))}
+                                    onChange={() =>
+                                        toggleSelectPage(
+                                            pagedDocs.map((d) => d._id),
+                                            pagedDocs.length > 0 && pagedDocs.every((d) => selectedIds.has(d._id))
+                                        )
+                                    }
+                                />
+                            </th>
                             <SortHeader field="name">Tên tài liệu</SortHeader>
                             <SortHeader field="category">Danh mục</SortHeader>
                             <SortHeader field="fileType">Loại file</SortHeader>
                             <SortHeader field="fileSize">Dung lượng</SortHeader>
                             <SortHeader field="uploadedAt">Ngày upload</SortHeader>
+                            <th>Trạng thái</th>
                             <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {pagedDocs.map(doc => (
-                            <tr key={doc._id}>
+                        {pagedDocs.map(doc => {
+                            const hidden = doc.isVisible === false;
+                            return (
+                            <tr key={doc._id} style={hidden ? styles.hiddenRow : undefined}>
+                                <td style={styles.checkboxTd}>
+                                    <input
+                                        type="checkbox"
+                                        checked={selectedIds.has(doc._id)}
+                                        onChange={() => toggleSelectOne(doc._id)}
+                                    />
+                                </td>
                                 <td>{doc.name}</td>
                                 <td>{doc.category?.name || '—'}</td>
                                 <td>{doc.fileType?.toUpperCase() || 'N/A'}</td>
                                 <td>{doc.fileSize ? (doc.fileSize / 1024).toFixed(2) + ' KB' : 'N/A'}</td>
                                 <td>{new Date(doc.uploadedAt).toLocaleDateString('vi-VN')}</td>
+                                <td>{hidden ? '⚪ Đã ẩn' : '🟢 Đang hiện'}</td>
                                 <td>
                                     <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" style={styles.downloadBtn}>
                                         <FiDownload />
@@ -432,9 +552,10 @@ const DocumentsManager = () => {
                                     </button>
                                 </td>
                             </tr>
-                        ))}
+                            );
+                        })}
                         {displayedDocs.length === 0 && (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#999' }}>Không có tài liệu nào khớp bộ lọc</td></tr>
+                            <tr><td colSpan="8" style={{ textAlign: 'center', padding: '24px', color: '#999' }}>Không có tài liệu nào khớp bộ lọc</td></tr>
                         )}
                     </tbody>
                 </table>
@@ -476,6 +597,32 @@ const styles = {
     searchInput: { width: '100%', padding: '9px 10px 9px 32px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px' },
     filterSelect: { padding: '9px 10px', border: '1px solid #ddd', borderRadius: '6px', fontSize: '14px', background: 'white' },
     resultCount: { fontSize: '13px', color: '#888', marginLeft: 'auto' },
+    bulkBar: {
+        display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap',
+        background: '#eef5ff', border: '1px solid #cfe2ff', borderRadius: '8px',
+        padding: '10px 14px', marginBottom: '12px'
+    },
+    bulkCount: { fontSize: '13px', fontWeight: '600', color: '#1a3a5c', marginRight: '4px' },
+    bulkBtn: {
+        background: 'white', border: '1px solid #ccc', borderRadius: '6px',
+        padding: '7px 14px', cursor: 'pointer', fontSize: '13px'
+    },
+    bulkBtnConfirm: {
+        background: '#28a745', color: 'white', border: 'none', borderRadius: '6px',
+        padding: '7px 14px', cursor: 'pointer', fontSize: '13px'
+    },
+    bulkBtnDanger: {
+        background: '#dc3545', color: 'white', border: 'none', borderRadius: '6px',
+        padding: '7px 14px', cursor: 'pointer', fontSize: '13px'
+    },
+    bulkBtnCancel: {
+        background: 'none', border: 'none', color: '#666', cursor: 'pointer',
+        fontSize: '13px', marginLeft: 'auto', textDecoration: 'underline'
+    },
+    checkboxTh: { width: '36px', textAlign: 'center' },
+    checkboxTd: { width: '36px', textAlign: 'center' },
+    hiddenRow: { opacity: 0.5 },
+    checkboxRow: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#555', marginBottom: '16px' },
     pagination: {
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px',
         marginTop: '16px', padding: '12px'

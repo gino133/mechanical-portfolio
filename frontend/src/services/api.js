@@ -176,6 +176,10 @@ export const documentAPI = {
     
     // Delete document (admin only)
     delete: (id) => api.delete(`/documents/${id}`),
+
+    // Bulk hide / show / re-categorize / delete (admin only)
+    // action: 'hide' | 'show' | 'category' | 'delete'
+    bulkUpdate: (ids, action, category) => api.patch('/documents/bulk', { ids, action, category }),
 };
 
 // ==================== CATEGORY API ====================
