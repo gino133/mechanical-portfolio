@@ -6,7 +6,13 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER, // Email của bạn
         pass: process.env.EMAIL_PASS  // Mật khẩu ứng dụng Gmail
-    }
+    },
+    // Fail fast instead of hanging indefinitely if the SMTP connection is
+    // slow/blocked (common on free-tier hosting) - 10s is generous for a
+    // background notification email.
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 // Hàm gửi email thông báo có liên hệ mới
