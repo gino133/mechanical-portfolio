@@ -17,21 +17,18 @@ const sendContact = async (req, res) => {
             interestedIn
         });
 
-        // FIX: email sending is best-effort and must not turn an already-saved
-        // message into a false "failed" response for the visitor. If
-        // EMAIL_USER/EMAIL_PASS aren't configured, this used to throw and the
-        // outer catch returned 500 even though the message was saved fine.
-        try {
-            await sendContactNotification(contact);
-            // await sendAutoReplyToCustomer(contact);
-        } catch (emailError) {
-            console.error('Contact saved, but notification email failed:', emailError.message);
-        }
-
+        // Respond right away - the message is already saved, so the visitor
+        // is done here. Email notification is best-effort and runs in the
+        // background: if SMTP is slow or unreachable (common on free-tier
+        // hosting), it must not delay or fail the visitor's response.
         res.status(201).json({
             success: true,
             message: 'Message sent successfully',
             data: contact
+        });
+
+        sendContactNotification(contact).catch((emailError) => {
+            console.error('Contact saved, but notification email failed:', emailError.message);
         });
     } catch (error) {
         console.error('Error sending contact:', error);
